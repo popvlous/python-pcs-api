@@ -295,7 +295,7 @@ def deliveryhistory(customer_id: int):
                                   Delivery.shipping_country, Delivery.shipping_phone,
                                   Delivery.shipment_number).filter_by(user_id=customer_id).join(subq, and_(
         Delivery.user_id == subq.c.user_id, Delivery.id == subq.c.delivery_id)).group_by(Delivery.user_id,
-                                                                                         Delivery.id).all()
+                                                                                         Delivery.id).order_by(desc(Delivery.id)).limit(5).all()
 
     delivery_infos = []
 
