@@ -24,8 +24,8 @@ wcapi = API(
     version="wc/v3"
 )
 
-user_name = "honesty_admin"
-user_passwd = "pyrarc@h94zj4dkru4"
+user_name = "pyrarc.app"
+user_passwd = "dOidZQSGR09BnHROt4ss#NT3"
 end_point_url_posts = "https://store.pyrarc.com/wp-json/jwt-auth/v1/token"
 
 payload = {
@@ -33,7 +33,7 @@ payload = {
     "password": user_passwd
 }
 
-mode = 'Production'
+mode = 'Debug'
 app = Flask(__name__)
 #app.config["SERVER_NAME"] = 'test.com:5000'
 
@@ -82,6 +82,32 @@ def show():
     return jsonify({
         'success': True,
         'msg': 'product list is {} '.format(productlist)
+    })
+
+@app.route('/pcs/api/v1/customer', methods=['POST'])
+def showcustomers():
+    # !/usr/bin/python
+    # -*- coding: utf-8 -*-
+    ##headers = {'content-type': "application/x-www-form-urlencoded"}
+    r = requests.post(end_point_url_posts, data=payload)
+    jwt_info = r.content.decode("utf-8").replace("'", '"')
+    data = json.loads(jwt_info)
+    s = json.dumps(data, indent=4, sort_keys=True)
+    print(s)
+    token = data['token']
+    Auth_token = "Bearer " + token
+
+    my_headers = {'Authorization': Auth_token}
+
+    # productlist = wcapi.get("products", params={"per_page": 20}).json()
+
+    response_customers = requests.get('https://store.pyrarc.com/wp-json/wc/v3/customers', data=payload, headers=my_headers)
+    customerlist = json.loads(response_customers.content.decode("utf-8").replace("'", '"'))
+    print(customerlist)
+
+    return jsonify({
+        'success': True,
+        'msg': 'product list is {} '.format(customerlist)
     })
 
 
