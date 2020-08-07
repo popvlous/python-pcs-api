@@ -8,7 +8,7 @@ from model import Orders, Inventory, db, Delivery
 from util import insertBlockChainDelivery, insertBlockChainInventory
 
 user_name = "pyrarc.app"
-user_passwd = "dOidZQSGR09BnHROt4ss#NT3"
+user_passwd = "B8I%7s2MnQ1&nTM9OYP15ms0"
 end_point_url_posts = "https://store.pyrarc.com/wp-json/jwt-auth/v1/token"
 
 payload = {
@@ -284,7 +284,7 @@ def inventorydeliveries():
 
     # line通知
     token = 'M5g5yVHMV2gc6iRvs1xu5Bsb9OEj0Wux8pQcKknldMo'
-    msg = '用戶已指派寄送，請登入平台，輸入物流單號 https://storeapi.pyrarc.com/backend/inventorylist?mid=' + str(inventory.id)
+    msg = '用戶已指派寄送，請登入平台，輸入物流單號 https://storeapi.pyrarc.com/backend/deliverylist?mid=' + str(inventory.id)
     lineNotifyMessage(token, msg)
     return jsonify({
         'success': 'true',
