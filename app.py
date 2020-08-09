@@ -1,7 +1,7 @@
 import json
 import pymysql
 import requests
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from woocommerce import API
 from config import config_dict
@@ -76,7 +76,7 @@ app.add_url_rule('/pcs/api/v1/inventory/deliveries', methods=['GET', 'POST'], vi
 # @app.route('/', subdomain="admin")
 @app.route('/')
 def hello_world():
-    return 'Hello World!'
+    return redirect('https://store.pyrarc.com')
 
 
 @app.route('/pcs/api/v1/product', methods=['GET', 'POST'])
