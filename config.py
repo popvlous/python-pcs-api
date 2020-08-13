@@ -14,10 +14,10 @@ class Config(object):
     # SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'db.sqlite3')
     SQLALCHEMY_DATABASE_URI = '{}://{}:{}@{}:{}/{}?autocommit=true'.format(
         'mysql',
-        'pcs',
-        'Foxconn@890',
-        '192.168.100.14',
-        3309,
+        'root',
+        'root',
+        '192.168.50.207',
+        3306,
         'pcs'
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
