@@ -33,7 +33,7 @@ payload = {
     "password": user_passwd
 }
 
-mode = 'Debug'
+mode = 'Production'
 app = Flask(__name__)
 
 if mode == 'Production':
@@ -42,7 +42,8 @@ else:
     config = config_dict['Debug']
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI;
+app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
+print(config.SQLALCHEMY_DATABASE_URI)
 
 if mode == 'Debug':
     app.logger.info('DBMS        = ' + config.SQLALCHEMY_DATABASE_URI)
