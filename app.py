@@ -1,16 +1,12 @@
-from datetime import datetime
-
-from flask import Flask, jsonify, request, make_response, render_template
-from sqlalchemy.cprocessors import str_to_date
-from woocommerce import API
 import json
-from pymongo import MongoClient
-from flask_sqlalchemy import SQLAlchemy
 import pymysql
-from sqlalchemy import insert
+import requests
+from flask import Flask, jsonify, request
+from flask_sqlalchemy import SQLAlchemy
+from woocommerce import API
+from config import config_dict
 
 pymysql.install_as_MySQLdb()
-from bson.objectid import ObjectId
 
 # conn = MongoClient("mongodb://sds:Foxconn890@192.168.100.11:15017,192.168.100.12:15017,192.168.100.13:15017/sds")
 # # 如果你只想連本機端的server你可以忽略，遠端的url填入: mongodb://<user_name>:<user_password>@ds<xxxxxx>.mlab.com:<xxxxx>/<database_name>，請務必既的把腳括號的內容代換成自己的資料。
@@ -28,9 +24,28 @@ wcapi = API(
     version="wc/v3"
 )
 
+user_name = "honesty_admin"
+user_passwd = "pyrarc@h94zj4dkru4"
+end_point_url_posts = "https://store.pyrarc.com/wp-json/jwt-auth/v1/token"
+
+payload = {
+    "username": user_name,
+    "password": user_passwd
+}
+
+mode = 'Debug'
 app = Flask(__name__)
+
+if mode == 'Production':
+    config = config_dict['Production']
+else:
+    config = config_dict['Debug']
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://pcs:Foxconn@890@192.168.100.14:3309/pcs"
+app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI;
+
+if mode == 'Debug':
+    app.logger.info('DBMS        = ' + config.SQLALCHEMY_DATABASE_URI)
 
 db.init_app(app)
 
@@ -42,7 +57,25 @@ def hello_world():
 
 @app.route('/pcs/api/v1/product', methods=['POST'])
 def show():
-    productlist = wcapi.get("products", params={"per_page": 20}).json()
+    # !/usr/bin/python
+    # -*- coding: utf-8 -*-
+    ##headers = {'content-type': "application/x-www-form-urlencoded"}
+    r = requests.post(end_point_url_posts, data=payload)
+    jwt_info = r.content.decode("utf-8").replace("'", '"')
+    data = json.loads(jwt_info)
+    s = json.dumps(data, indent=4, sort_keys=True)
+    print(s)
+    token = data['token']
+    Auth_token = "Bearer " + token
+
+    my_headers = {'Authorization': Auth_token}
+
+    # productlist = wcapi.get("products", params={"per_page": 20}).json()
+
+    response_productlist = requests.get('https://store.pyrarc.com/wp-json/wc/v3/products', data=payload, headers=my_headers)
+    productlist = json.loads(response_productlist.content.decode("utf-8").replace("'", '"'))
+    print(productlist)
+
     return jsonify({
         'success': True,
         'msg': 'product list is {} '.format(productlist)
@@ -55,7 +88,14 @@ def order_details():
     j_request_data = json.loads(request_data)
     req_id = j_request_data['id']
     orderid = 'orders/' + str(req_id)
-    order_details = wcapi.get(orderid).json()
+    # 無jwt調用方式
+    # order_details = wcapi.get(orderid).json()
+    r = requests.post(end_point_url_posts, data=payload)
+    jwt_info = r.content.decode("utf-8").replace("'", '"')
+    data = json.loads(jwt_info)
+    my_headers = {'Authorization': "Bearer " + data['token']}
+    res_order_details = requests.get('https://store.pyrarc.com/wp-json/wc/v3/orders/' + str(req_id), data=payload, headers=my_headers)
+    order_details = json.loads(res_order_details.content.decode("utf-8").replace("'", '"'))
     order_details_id = order_details['id']
     order_details_parent_id = order_details['parent_id']
     order_details_status = order_details['status']
@@ -93,7 +133,7 @@ def order_details():
     shipping_address_1 = shipping['address_1']
     shipping_address_2 = shipping['address_2']
     shipping_city = shipping['city']
-    #shipping_state = shipping['state']
+    # shipping_state = shipping['state']
     shipping_postcode = shipping['postcode']
     shipping_country = shipping['country']
 
@@ -133,7 +173,7 @@ def order_details():
         "'" + shipping_address_1 + "'",
         "'" + shipping_address_2 + "'",
         "'" + shipping_city + "'",
-        #"'" + shipping_state + "'",
+        # "'" + shipping_state + "'",
         "'" + shipping_postcode + "'",
         "'" + shipping_country + "'"
     )
@@ -141,7 +181,8 @@ def order_details():
     print(jsonify(order_details))
     return jsonify({
         'success': True,
-        'msg': 'order record is create in blcokchain '
+        'msg': 'order record is create in blcokchain ',
+        'data': j_request_data
     })
 
 
