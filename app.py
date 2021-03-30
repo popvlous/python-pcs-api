@@ -35,6 +35,7 @@ payload = {
 
 mode = 'Production'
 app = Flask(__name__)
+app.config["SERVER_NAME"] = 'pyrarc.com:5000'
 
 if mode == 'Production':
     config = config_dict['Production']
@@ -51,12 +52,12 @@ if mode == 'Debug':
 db.init_app(app)
 
 
-@app.route('/')
+@app.route('/', subdomain="storeapi")
 def hello_world():
     return 'Hello World!'
 
 
-@app.route('/pcs/api/v1/product', methods=['POST'])
+@app.route('/pcs/api/v1/product', methods=['POST'], subdomain="storeapi")
 def show():
     # !/usr/bin/python
     # -*- coding: utf-8 -*-
