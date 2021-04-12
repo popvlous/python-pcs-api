@@ -10,7 +10,7 @@ from model import db, Orders, OrdersLineItems
 pymysql.install_as_MySQLdb()
 
 # conn = MongoClient("mongodb://sds:Foxconn890@192.168.100.11:15017,192.168.100.12:15017,192.168.100.13:15017/sds")
-# # 如果你只想連本機端的server你可以忽略，遠端的url填入: mongodb://<user_name>:<user_password>@ds<xxxxxx>.mlab.com:<xxxxx>/<database_name>，請務必既的把腳括號的內容代換成自己的資料。
+# mongodb://<user_name>:<user_password>@ds<xxxxxx>.mlab.com:<xxxxx>/<database_name>
 # db = conn.sds
 # collection = db.users
 # collection1 = db.inspections
@@ -285,5 +285,5 @@ def order_details():
             'data': j_request_data
         })
 
-    if __name__ == '__main__':
-        app.run(host='0.0.0.0', port=5000, debug=app.config['DEBUG'])
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=app.config['DEBUG'])
