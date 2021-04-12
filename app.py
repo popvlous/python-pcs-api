@@ -33,7 +33,7 @@ payload = {
     "password": user_passwd
 }
 
-mode = 'Debug'
+mode = 'Production'
 app = Flask(__name__)
 # app.config["SERVER_NAME"] = 'test.com:5000'
 
@@ -130,18 +130,19 @@ def showorder():
 @app.route('/pcs/api/v1/bc', methods=['POST'])
 def order_details():
     request_data = request.data.decode('utf-8')
-    j_request_data = json.loads(request_data)
-    req_id = j_request_data['id']
-    orderid = 'orders/' + str(req_id)
-    # 無jwt調用方式
-    # order_details = wcapi.get(orderid).json()
-    r = requests.post(end_point_url_posts, data=payload)
-    jwt_info = r.content.decode("utf-8").replace("'", '"')
-    data = json.loads(jwt_info)
-    my_headers = {'Authorization': "Bearer " + data['token']}
-    res_order_details = requests.get('https://store.pyrarc.com/wp-json/wc/v3/orders/' + str(req_id), data=payload,
-                                     headers=my_headers)
-    order_details = json.loads(res_order_details.content.decode("utf-8").replace("'", '"'))
+    #j_request_data = json.loads(request_data)
+    # req_id = j_request_data['id']
+    # orderid = 'orders/' + str(req_id)
+    # # 無jwt調用方式
+    # # order_details = wcapi.get(orderid).json()
+    # r = requests.post(end_point_url_posts, data=payload)
+    # jwt_info = r.content.decode("utf-8").replace("'", '"')
+    # data = json.loads(jwt_info)
+    # my_headers = {'Authorization': "Bearer " + data['token']}
+    # res_order_details = requests.get('https://store.pyrarc.com/wp-json/wc/v3/orders/' + str(req_id), data=payload,
+    #                                  headers=my_headers)
+    # order_details = json.loads(res_order_details.content.decode("utf-8").replace("'", '"'))
+    order_details = json.loads(request_data)
     order_details_id = order_details['id']
     order_details_parent_id = order_details['parent_id']
     order_details_status = order_details['status']
@@ -282,7 +283,7 @@ def order_details():
         return jsonify({
             'success': True,
             'msg': 'order record is create in blcokchain ',
-            'data': j_request_data
+            'data': order_details
         })
 
 if __name__ == '__main__':
