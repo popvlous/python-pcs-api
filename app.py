@@ -130,7 +130,9 @@ def showorder():
 @app.route('/pcs/api/v1/bc', methods=['POST'])
 def order_details():
     request_data = request.data.decode('utf-8')
-    #j_request_data = json.loads(request_data)
+
+    # 本機測試時請打開
+    # j_request_data = json.loads(request_data)
     # req_id = j_request_data['id']
     # orderid = 'orders/' + str(req_id)
     # # 無jwt調用方式
@@ -142,6 +144,8 @@ def order_details():
     # res_order_details = requests.get('https://store.pyrarc.com/wp-json/wc/v3/orders/' + str(req_id), data=payload,
     #                                  headers=my_headers)
     # order_details = json.loads(res_order_details.content.decode("utf-8").replace("'", '"'))
+
+    #正式環境webhook可以直接獲取到
     order_details = json.loads(request_data)
     order_details_id = order_details['id']
     order_details_parent_id = order_details['parent_id']
@@ -157,6 +161,7 @@ def order_details():
     order_details_transaction_id = order_details['transaction_id']
     order_details_customer_ip_address = order_details['customer_ip_address']
     order_details_created_via = order_details['created_via']
+    order_details_customer_id = order_details['customer_id']
     order_details_customer_note = order_details['customer_note']
     order_details_cart_hash = order_details['cart_hash']
 
@@ -203,14 +208,15 @@ def order_details():
 
     # 保存資料庫
     order_info = Orders(order_details_id, order_details_parent_id, order_details_status, billing_first_name,
-                        billing_last_name, order_details_currency, order_details_version,order_details_total, order_details_total_tax,
+                        billing_last_name, order_details_currency, order_details_version, order_details_total,
+                        order_details_total_tax,
                         billing_company, billing_address_1, billing_address_2, billing_city, billing_state,
                         billing_postcode, billing_country, billing_email, billing_phone, shipping_first_name,
                         shipping_last_name, shipping_company, shipping_address_1, shipping_address_2, shipping_city,
                         shipping_postcode, shipping_country, order_details_payment_method,
                         order_details_payment_method_title, order_details_transaction_id,
-                        order_details_customer_ip_address, order_details_created_via, order_details_customer_note,
-                        order_details_cart_hash)
+                        order_details_customer_ip_address, order_details_created_via, order_details_customer_id,
+                        order_details_customer_note, order_details_cart_hash)
     db.session.add(order_info)
     db.session.commit()
     # 保存資料庫
@@ -231,10 +237,11 @@ def order_details():
         line_items_price = line_item['price']
         line_items_parent_name = line_item['parent_name']
         line_items_info = OrdersLineItems(order_details_id, line_items_id, line_items_name,
-                                 line_items_product_id, line_items_variation_id, line_items_quantity,
-                                 line_items_tax_class, line_items_subtotal, line_items_subtotal_tax, line_items_total,
-                                 line_items_total_tax, line_items_sku, line_items_price,
-                                 line_items_parent_name)
+                                          line_items_product_id, line_items_variation_id, line_items_quantity,
+                                          line_items_tax_class, line_items_subtotal, line_items_subtotal_tax,
+                                          line_items_total,
+                                          line_items_total_tax, line_items_sku, line_items_price,
+                                          line_items_parent_name)
         db.session.add(line_items_info)
         db.session.commit()
 
@@ -285,6 +292,7 @@ def order_details():
             'msg': 'order record is create in blcokchain ',
             'data': order_details
         })
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=app.config['DEBUG'])

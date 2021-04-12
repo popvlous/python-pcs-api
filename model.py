@@ -27,6 +27,7 @@ class Orders(db.Model):
     transaction_id = db.Column(db.String(50), nullable=True)
     customer_ip_address = db.Column(db.String(50), nullable=True)
     created_via = db.Column(db.String(50), nullable=True)
+    customer_id = db.Column(db.Integer, nullable=True)
     customer_note = db.Column(db.String(50), nullable=True)
     date_completed = db.Column(db.String(50), nullable=True)
     date_paid = db.Column(db.String(50), nullable=True)
@@ -55,7 +56,7 @@ class Orders(db.Model):
                  billing_postcode, billing_country, billing_email, billing_phone, shipping_first_name,
                  shipping_last_name, shipping_company, shipping_address_1, shipping_address_2, shipping_city,
                  shipping_postcode, shipping_country, payment_method, payment_method_title, transaction_id,
-                 customer_ip_address, created_via, customer_note, cart_hash):
+                 customer_ip_address, created_via, customer_id, customer_note, cart_hash):
         self.order_id = order_id
         self.parent_id = parent_id
         self.state = state
@@ -88,7 +89,8 @@ class Orders(db.Model):
         self.payment_method_title = payment_method_title
         self.transaction_id = transaction_id
         self.customer_ip_address = customer_ip_address
-        self.created_via = created_via,
+        self.created_via = created_via
+        self.customer_id = customer_id
         self.customer_note = customer_note
         self.cart_hash = cart_hash
 
@@ -128,7 +130,7 @@ class OrdersLineItems(db.Model):
         self.line_items_subtotal_tax = line_items_subtotal_tax
         self.line_items_total = line_items_total
         self.line_items_total_tax = line_items_total_tax
-        #self.line_items_taxes = line_items_taxes
+        # self.line_items_taxes = line_items_taxes
         self.line_items_sku = line_items_sku
         self.line_items_price = line_items_price
         self.line_items_parent_name = line_items_parent_name
