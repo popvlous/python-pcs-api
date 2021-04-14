@@ -5,7 +5,7 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from woocommerce import API
 from config import config_dict
-from inventory import inventory, inventoryadd, getInvertoryNow, inventorydelivery
+from inventory import inventory, inventoryadd, getInvertoryNow, inventorydelivery, inventoryhistory
 from model import db, Orders, OrdersLineItems, Inventory
 
 pymysql.install_as_MySQLdb()
@@ -56,6 +56,7 @@ db.init_app(app)
 
 #路由設定
 app.add_url_rule('/pcs/api/v1/inventories/<int:customer_id>/<int:product_id>', view_func=inventory)
+app.add_url_rule('/pcs/api/v1/inventory/history/<int:customer_id>/<int:product_id>', view_func=inventoryhistory)
 app.add_url_rule('/pcs/api/v1/inventory/add', methods=['POST'], view_func=inventoryadd)
 app.add_url_rule('/pcs/api/v1/inventory/delivery', methods=['POST'], view_func=inventorydelivery)
 
