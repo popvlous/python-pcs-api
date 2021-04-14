@@ -206,7 +206,7 @@ class Inventory(db.Model):
         self.shipping_city = shipping_city
         self.shipping_postcode = shipping_postcode
         self.shipping_country = shipping_country
-        self.shipping_postcode = shipping_phone
+        self.shipping_phone = shipping_phone
         self.remark = remark
 
     def to_json(self):
@@ -218,7 +218,7 @@ class Inventory(db.Model):
             'adj_amount': self.adj_amount,
             'create_time': self.create_time,
             'modify_time': self.modify_time,
-            'transaction_id': self.modify_time,
+            'transaction_id': self.transaction_id,
             'order_id': self.order_id,
             'product_id': self.product_id,
             'create_by': self.create_by,
