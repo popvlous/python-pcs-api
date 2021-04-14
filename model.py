@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from flask_sqlalchemy import SQLAlchemy
@@ -134,3 +135,118 @@ class OrdersLineItems(db.Model):
         self.line_items_sku = line_items_sku
         self.line_items_price = line_items_price
         self.line_items_parent_name = line_items_parent_name
+
+
+def to_json(inst, cls):
+    """
+    Jsonify the sql alchemy query result.
+    """
+    convert = dict()
+    # add your coversions for things like datetime's
+    # and what-not that aren't serializable.
+    d = dict()
+    for c in cls.__table__.columns:
+        v = getattr(inst, c.name)
+        if c.type in convert.keys() and v is not None:
+            try:
+                d[c.name] = convert[c.type](v)
+            except:
+                d[c.name] = "Error:  Failed to covert using ", str(convert[c.type])
+        elif v is None:
+            d[c.name] = str()
+        else:
+            d[c.name] = v
+    return json.dumps(d)
+
+
+class Inventory(db.Model):
+    __tablename__ = 'inventory'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer)
+    beging_inventory = db.Column(db.Integer)
+    ending_Inventory = db.Column(db.Integer)
+    adj_amount = db.Column(db.String(50))
+    create_time = db.Column(db.DateTime, index=True, default=datetime.now)
+    modify_time = db.Column(db.DateTime, index=True, default=datetime.now)
+    transaction_id = db.Column(db.String(100))
+    order_id = db.Column(db.Integer)
+    product_id = db.Column(db.Integer)
+    create_by = db.Column(db.String(100))
+    order_source = db.Column(db.String(100))
+    location = db.Column(db.String(100))
+    shipping_first_name = db.Column(db.String(50), nullable=True)
+    shipping_last_name = db.Column(db.String(50), nullable=True)
+    shipping_company = db.Column(db.String(50), nullable=True)
+    shipping_address_1 = db.Column(db.String(500), nullable=True)
+    shipping_address_2 = db.Column(db.String(500), nullable=True)
+    shipping_city = db.Column(db.String(50), nullable=True)
+    shipping_postcode = db.Column(db.String(50), nullable=True)
+    shipping_country = db.Column(db.String(50), nullable=True)
+    shipping_phone = db.Column(db.String(50), nullable=True)
+    shipment_number = db.Column(db.String(50), nullable=True)
+    remark = db.Column(db.String(50))
+
+    def __init__(self, user_id, beging_inventory, ending_Inventory, adj_amount, order_id, product_id, create_by,
+                 order_source, shipping_first_name, shipping_last_name, shipping_company, shipping_address_1,
+                 shipping_city, shipping_postcode, shipping_country, shipping_phone, remark):
+        self.user_id = user_id
+        self.beging_inventory = beging_inventory
+        self.ending_Inventory = ending_Inventory
+        self.adj_amount = adj_amount
+        self.order_id = order_id
+        self.product_id = product_id
+        self.create_by = create_by
+        self.order_source = order_source
+        self.create_time = datetime.utcnow()
+        self.modify_time = datetime.utcnow()
+        self.shipping_first_name = shipping_first_name
+        self.shipping_last_name = shipping_last_name
+        self.shipping_company = shipping_company
+        self.shipping_address_1 = shipping_address_1
+        self.shipping_city = shipping_city
+        self.shipping_postcode = shipping_postcode
+        self.shipping_country = shipping_country
+        self.shipping_postcode = shipping_phone
+        self.remark = remark
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'beging_inventory': self.beging_inventory,
+            'ending_Inventory': self.ending_Inventory,
+            'adj_amount': self.adj_amount,
+            'create_time': self.create_time,
+            'modify_time': self.modify_time,
+            'transaction_id': self.modify_time,
+            'order_id': self.order_id,
+            'product_id': self.product_id,
+            'create_by': self.create_by,
+            'order_source': self.order_source,
+            'shipping_first_name': self.shipping_first_name,
+            'shipping_last_name': self.shipping_last_name,
+            'shipping_company': self.shipping_company,
+            'shipping_address_1': self.shipping_address_1,
+            'shipping_address_2': self.shipping_address_2,
+            'shipping_city': self.shipping_city,
+            'shipping_postcode': self.shipping_postcode,
+            'shipping_country': self.shipping_country,
+            'shipping_phone': self.shipping_phone,
+            'shipment_number': self.shipment_number,
+            'remark': self.remark
+        }
+
+
+class InventoryMeta(db.Model):
+    __tablename__ = 'inventorymeta'
+    id = db.Column(db.Integer, primary_key=True)
+    inventory_id = db.Column(db.Integer)
+    purchase_type = db.Column(db.Integer)
+    vaild_time = db.Column(db.DateTime, index=True, default=datetime.now)
+    remark = db.Column(db.String(50))
+
+    def __init__(self, role_name, role_status):
+        self.role_name = role_name
+        self.role_status = role_status
+        self.base_create_time = datetime.utcnow()
+        self.base_modify_time = datetime.utcnow()

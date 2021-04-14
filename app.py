@@ -5,7 +5,8 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from woocommerce import API
 from config import config_dict
-from model import db, Orders, OrdersLineItems
+from inventory import inventory, inventoryadd, getInvertoryNow, inventorydelivery
+from model import db, Orders, OrdersLineItems, Inventory
 
 pymysql.install_as_MySQLdb()
 
@@ -33,6 +34,8 @@ payload = {
     "password": user_passwd
 }
 
+#正式環境請修正mode = 'Production'
+
 mode = 'Production'
 app = Flask(__name__)
 # app.config["SERVER_NAME"] = 'test.com:5000'
@@ -50,6 +53,11 @@ if mode == 'Debug':
     app.logger.info('DBMS        = ' + config.SQLALCHEMY_DATABASE_URI)
 
 db.init_app(app)
+
+#路由設定
+app.add_url_rule('/pcs/api/v1/inventories/<int:customer_id>/<int:product_id>', view_func=inventory)
+app.add_url_rule('/pcs/api/v1/inventory/add', methods=['POST'], view_func=inventoryadd)
+app.add_url_rule('/pcs/api/v1/inventory/delivery', methods=['POST'], view_func=inventorydelivery)
 
 
 # @app.route('/', subdomain="admin")
@@ -117,10 +125,8 @@ def showcustomers():
 @app.route('/pcs/api/v1/order')
 def showorder():
     orders = Orders.query.filter().all()
-
     json_format = json.dumps(orders)
     print(json_format)
-
     return jsonify({
         'success': True,
         'msg': 'orders list is {} '.format(json_format)
@@ -191,18 +197,18 @@ def order_details():
     shipping_country = shipping['country']
     # 保存line items
     line_items = order_details['line_items']
-    # line_items_id = line_items['id']
-    # line_items_name = line_items['name']
-    # line_items_product_id = line_items['product_id']
-    # line_items_variation_id = line_items['variation_id']
-    # line_items_quantity = line_items['quantity']
+    #line_items_id = line_items['id']
+    #line_items_name = line_items['name']
+    #line_items_product_id = line_items['product_id']
+    #line_items_variation_id = line_items['variation_id']
+    #line_items_quantity = line_items['quantity']
     # line_items_tax_class = line_items['tax_class']
     # line_items_subtotal = line_items['subtotal']
     # line_items_subtotal_tax = line_items['subtotal_tax']
     # line_items_total = line_items['total']
     # line_items_total_tax = line_items['total_tax']
     # line_items_taxes = line_items['taxes']
-    # line_items_sku = line_items['sku']
+    #line_items_sku = line_items['sku']
     # line_items_price = line_items['price']
     # line_items_parent_name = line_items['parent_name']
 
@@ -245,6 +251,16 @@ def order_details():
         db.session.add(line_items_info)
         db.session.commit()
 
+        # 庫存異動
+        beging_inventory, ending_Inventory = getInvertoryNow(order_details_customer_id, line_items_product_id,
+                                                             line_items_quantity)
+        inventory = Inventory(order_details_customer_id, beging_inventory, ending_Inventory, line_items_quantity,
+                              order_details_id, line_items_product_id, 'System',
+                              'Web', '', '', '', '', '', '', '', '', '')
+        db.session.add(inventory)
+        db.session.commit()
+
+
         # sql = "INSERT INTO Orders (order_id, parent_id, status, billing_first_name, billing_last_name)VALUES (" + str(
         #     order_details_id) + ", " + "" + str(order_details_parent_id) + ", " + str(order_details_status) + ", " + str(
         #     billing_first_name) + ", " + str(billing_last_name) + ")"
@@ -286,12 +302,13 @@ def order_details():
         #     "'" + shipping_country + "'"
         # )
         # db.engine.execute(sql)
-        print(jsonify(order_details))
-        return jsonify({
-            'success': True,
-            'msg': 'order record is create in blcokchain ',
-            'data': order_details
-        })
+
+    print(jsonify(order_details))
+    return jsonify({
+        'success': True,
+        'msg': 'order record is create in blcokchain ',
+        'data': order_details
+    })
 
 
 if __name__ == '__main__':
