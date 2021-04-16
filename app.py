@@ -57,8 +57,8 @@ db.init_app(app)
 #路由設定
 app.add_url_rule('/pcs/api/v1/inventories/<int:customer_id>/<int:product_id>', view_func=inventory)
 app.add_url_rule('/pcs/api/v1/inventory/history/<int:customer_id>/<int:product_id>', view_func=inventoryhistory)
-app.add_url_rule('/pcs/api/v1/inventory/add', methods=['POST'], view_func=inventoryadd)
-app.add_url_rule('/pcs/api/v1/inventory/delivery', methods=['POST'], view_func=inventorydelivery)
+app.add_url_rule('/pcs/api/v1/inventory/add', methods=['GET', 'POST'], view_func=inventoryadd)
+app.add_url_rule('/pcs/api/v1/inventory/delivery', methods=['GET', 'POST'], view_func=inventorydelivery)
 
 
 # @app.route('/', subdomain="admin")
@@ -67,7 +67,7 @@ def hello_world():
     return 'Hello World!'
 
 
-@app.route('/pcs/api/v1/product', methods=['POST'])
+@app.route('/pcs/api/v1/product', methods=['GET', 'POST'])
 def show():
     # !/usr/bin/python
     # -*- coding: utf-8 -*-
@@ -95,7 +95,7 @@ def show():
     })
 
 
-@app.route('/pcs/api/v1/customer', methods=['POST'])
+@app.route('/pcs/api/v1/customer', methods=['GET', 'POST'])
 def showcustomers():
     # !/usr/bin/python
     # -*- coding: utf-8 -*-

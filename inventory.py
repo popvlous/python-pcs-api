@@ -1,10 +1,20 @@
 import json
 
+import requests
 from flask import jsonify, app, request
 from sqlalchemy import desc
 
 from model import Orders, Inventory, db
 
+def lineNotifyMessage(token, msg):
+    headers = {
+        "Authorization": "Bearer " + token,
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+
+    payload = {'message': msg}
+    r = requests.post("https://notify-api.line.me/api/notify", headers=headers, params=payload)
+    return r.status_code
 
 # 獲取最新庫存
 def getEndInvertory(user_id=None, product_id=None):
@@ -132,6 +142,9 @@ def inventorydelivery():
                           shipping_city, shipping_postcode, shipping_country, shipping_phone, remark)
     db.session.add(inventory)
     db.session.commit()
+    token = 'M5g5yVHMV2gc6iRvs1xu5Bsb9OEj0Wux8pQcKknldMo'
+    msg = '用戶已指派寄送，請登入平台，輸入物流單號 https://storeapi.pyrarc.com/backend/inventorylist?mid=' + str(inventory.id)
+    lineNotifyMessage(token,msg)
     return jsonify({
         'success': True,
         'msg': 'inventory is added now ',
