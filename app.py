@@ -253,9 +253,9 @@ def order_details():
         db.session.commit()
 
         # 庫存異動
-        beging_inventory, ending_Inventory = getInvertoryNow(order_details_customer_id, line_items_product_id,
+        beging_inventory, ending_inventory = getInvertoryNow(order_details_customer_id, line_items_product_id,
                                                              line_items_quantity)
-        inventory = Inventory(order_details_customer_id, beging_inventory, ending_Inventory, line_items_quantity,
+        inventory = Inventory(order_details_customer_id, beging_inventory, ending_inventory, line_items_quantity,
                               order_details_id, line_items_product_id, 'System',
                               'Web', '', '', '', '', '', '', '', '', '')
         db.session.add(inventory)

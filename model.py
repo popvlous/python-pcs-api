@@ -164,7 +164,7 @@ class Inventory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer)
     beging_inventory = db.Column(db.Integer)
-    ending_Inventory = db.Column(db.Integer)
+    ending_inventory = db.Column(db.Integer)
     adj_amount = db.Column(db.String(50))
     create_time = db.Column(db.DateTime, index=True, default=datetime.now)
     modify_time = db.Column(db.DateTime, index=True, default=datetime.now)
@@ -186,12 +186,12 @@ class Inventory(db.Model):
     shipment_number = db.Column(db.String(50), nullable=True)
     remark = db.Column(db.String(50))
 
-    def __init__(self, user_id, beging_inventory, ending_Inventory, adj_amount, order_id, product_id, create_by,
+    def __init__(self, user_id, beging_inventory, ending_inventory, adj_amount, order_id, product_id, create_by,
                  order_source, shipping_first_name, shipping_last_name, shipping_company, shipping_address_1,
                  shipping_city, shipping_postcode, shipping_country, shipping_phone, remark):
         self.user_id = user_id
         self.beging_inventory = beging_inventory
-        self.ending_Inventory = ending_Inventory
+        self.ending_inventory = ending_inventory
         self.adj_amount = adj_amount
         self.order_id = order_id
         self.product_id = product_id
@@ -214,7 +214,7 @@ class Inventory(db.Model):
             'id': self.id,
             'user_id': self.user_id,
             'beging_inventory': self.beging_inventory,
-            'ending_Inventory': self.ending_Inventory,
+            'ending_Inventory': self.ending_inventory,
             'adj_amount': self.adj_amount,
             'create_time': self.create_time,
             'modify_time': self.modify_time,

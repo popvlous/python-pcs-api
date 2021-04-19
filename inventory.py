@@ -21,7 +21,7 @@ def getEndInvertory(user_id=None, product_id=None):
     invertory_info = Inventory.query.filter_by(user_id=user_id, product_id=product_id).order_by(
         desc(Inventory.id)).limit(
         1).all()
-    return invertory_info[0].ending_Inventory
+    return invertory_info[0].ending_inventory
 
 
 # 獲取最新庫存
@@ -30,12 +30,12 @@ def getInvertoryNow(user_id=None, product_id=None, adj_amount=None):
         desc(Inventory.id)).limit(
         1).all()
     if invertory_info:
-        beging_inventory = invertory_info[0].ending_Inventory
-        ending_Inventory = beging_inventory + adj_amount
+        beging_inventory = invertory_info[0].ending_inventory
+        ending_inventory = beging_inventory + adj_amount
     else:
         beging_inventory = 0
-        ending_Inventory = adj_amount
-    return beging_inventory, ending_Inventory
+        ending_inventory = adj_amount
+    return beging_inventory, ending_inventory
 
 
 # 查詢最新庫存by客戶ＩＤ跟產品號碼
@@ -62,8 +62,8 @@ def inventoryadd():
     create_by = data['create_by']
     order_source = data['order_source']
     # 獲取最新的庫存
-    beging_inventory, ending_Inventory = getInvertoryNow(user_id, product_id, adj_amount)
-    inventory = Inventory(user_id, beging_inventory, ending_Inventory, adj_amount, order_id, product_id, create_by,
+    beging_inventory, ending_inventory = getInvertoryNow(user_id, product_id, adj_amount)
+    inventory = Inventory(user_id, beging_inventory, ending_inventory, adj_amount, order_id, product_id, create_by,
                           order_source, '', '', '', '', '', '', '', '', '')
     db.session.add(inventory)
     db.session.commit()
@@ -99,8 +99,8 @@ def inventorydelivery():
             'message': 'Quantities is not enough'
         })
     # 獲取最新的庫存
-    beging_inventory, ending_Inventory = getInvertoryNow(user_id, product_id, adj_amount)
-    inventory = Inventory(user_id, beging_inventory, ending_Inventory, adj_amount, 0, product_id, create_by,
+    beging_inventory, ending_inventory = getInvertoryNow(user_id, product_id, adj_amount)
+    inventory = Inventory(user_id, beging_inventory, ending_inventory, adj_amount, 0, product_id, create_by,
                           order_source, shipping_first_name, shipping_last_name, shipping_company, shipping_address_1,
                           shipping_city, shipping_postcode, shipping_country, shipping_phone, remark)
     db.session.add(inventory)
@@ -136,8 +136,8 @@ def inventorydelivery():
             'message': 'Quantities is not enough'
         })
     # 獲取最新的庫存
-    beging_inventory, ending_Inventory = getInvertoryNow(user_id, product_id, adj_amount)
-    inventory = Inventory(user_id, beging_inventory, ending_Inventory, adj_amount, 0, product_id, create_by,
+    beging_inventory, ending_inventory = getInvertoryNow(user_id, product_id, adj_amount)
+    inventory = Inventory(user_id, beging_inventory, ending_inventory, adj_amount, 0, product_id, create_by,
                           order_source, shipping_first_name, shipping_last_name, shipping_company, shipping_address_1,
                           shipping_city, shipping_postcode, shipping_country, shipping_phone, remark)
     db.session.add(inventory)
