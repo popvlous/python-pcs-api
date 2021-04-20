@@ -40,7 +40,7 @@ mode = 'Production'
 app = Flask(__name__)
 # app.config["SERVER_NAME"] = 'test.com:5000'
 
-if mode == 'Debug':
+if mode == 'Production':
     config = config_dict['Production']
 else:
     config = config_dict['Debug']
