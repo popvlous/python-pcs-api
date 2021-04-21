@@ -22,6 +22,11 @@ class Config(object):
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
+
 
 class ProductionConfig(Config):
     DEBUG = False
@@ -40,6 +45,11 @@ class ProductionConfig(Config):
         3306,
         'pcs'
     )
+
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
 
 
 class DebugConfig(Config):
