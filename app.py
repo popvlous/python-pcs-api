@@ -45,8 +45,8 @@ if mode == 'Production':
 else:
     config = config_dict['Debug']
 
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = config.SQLALCHEMY_DATABASE_URI
+app.config.from_object(config)
+
 print(config.SQLALCHEMY_DATABASE_URI)
 
 if mode == 'Debug':
