@@ -34,7 +34,7 @@ payload = {
     "password": user_passwd
 }
 
-#正式環境請修正mode = 'Production'
+# 正式環境請修正mode = 'Production'
 
 mode = 'Production'
 app = Flask(__name__)
@@ -54,7 +54,7 @@ if mode == 'Debug':
 
 db.init_app(app)
 
-#路由設定
+# 路由設定
 app.add_url_rule('/pcs/api/v1/inventories/<int:customer_id>/<int:product_id>', view_func=inventory)
 app.add_url_rule('/pcs/api/v1/inventory/history/<int:customer_id>/<int:product_id>', view_func=inventoryhistory)
 app.add_url_rule('/pcs/api/v1/inventory/add', methods=['GET', 'POST'], view_func=inventoryadd)
@@ -152,7 +152,7 @@ def order_details():
     #                                  headers=my_headers)
     # order_details = json.loads(res_order_details.content.decode("utf-8").replace("'", '"'))
 
-    #正式環境webhook可以直接獲取到
+    # 正式環境webhook可以直接獲取到
     order_details = json.loads(request_data)
     order_details_id = order_details['id']
     order_details_parent_id = order_details['parent_id']
@@ -198,18 +198,18 @@ def order_details():
     shipping_country = shipping['country']
     # 保存line items
     line_items = order_details['line_items']
-    #line_items_id = line_items['id']
-    #line_items_name = line_items['name']
-    #line_items_product_id = line_items['product_id']
-    #line_items_variation_id = line_items['variation_id']
-    #line_items_quantity = line_items['quantity']
+    # line_items_id = line_items['id']
+    # line_items_name = line_items['name']
+    # line_items_product_id = line_items['product_id']
+    # line_items_variation_id = line_items['variation_id']
+    # line_items_quantity = line_items['quantity']
     # line_items_tax_class = line_items['tax_class']
     # line_items_subtotal = line_items['subtotal']
     # line_items_subtotal_tax = line_items['subtotal_tax']
     # line_items_total = line_items['total']
     # line_items_total_tax = line_items['total_tax']
     # line_items_taxes = line_items['taxes']
-    #line_items_sku = line_items['sku']
+    # line_items_sku = line_items['sku']
     # line_items_price = line_items['price']
     # line_items_parent_name = line_items['parent_name']
 
@@ -261,7 +261,6 @@ def order_details():
         db.session.add(inventory)
         db.session.commit()
 
-
         # sql = "INSERT INTO Orders (order_id, parent_id, status, billing_first_name, billing_last_name)VALUES (" + str(
         #     order_details_id) + ", " + "" + str(order_details_parent_id) + ", " + str(order_details_status) + ", " + str(
         #     billing_first_name) + ", " + str(billing_last_name) + ")"
@@ -303,6 +302,267 @@ def order_details():
         #     "'" + shipping_country + "'"
         # )
         # db.engine.execute(sql)
+
+    print(jsonify(order_details))
+    return jsonify({
+        'success': True,
+        'msg': 'order record is create in blcokchain ',
+        'data': order_details
+    })
+
+
+@app.route('/pcs/api/v1/bc/update', methods=['POST'])
+def orderupdate():
+    request_data = request.data.decode('utf-8')
+    if not request_data:
+        return jsonify({
+            'success': False
+        })
+
+    # 本機測試時請打開
+    # j_request_data = json.loads(request_data)
+    # req_id = j_request_data['id']
+    # orderid = 'orders/' + str(req_id)
+    # # 無jwt調用方式
+    # # order_details = wcapi.get(orderid).json()
+    # r = requests.post(end_point_url_posts, data=payload)
+    # jwt_info = r.content.decode("utf-8").replace("'", '"')
+    # data = json.loads(jwt_info)
+    # my_headers = {'Authorization': "Bearer " + data['token']}
+    # res_order_details = requests.get('https://store.pyrarc.com/wp-json/wc/v3/orders/' + str(req_id), data=payload,
+    #                                  headers=my_headers)
+    # order_details = json.loads(res_order_details.content.decode("utf-8").replace("'", '"'))
+
+    # 正式環境webhook可以直接獲取到
+    order_details = json.loads(request_data)
+    order_details_id = order_details['id']
+    order_details_parent_id = order_details['parent_id']
+    order_details_status = order_details['status']
+    order_details_currency = order_details['currency']
+    order_details_version = order_details['version']
+    order_details_date_created = order_details['date_created']
+    order_details_date_modified = order_details['date_modified']
+    order_details_total = order_details['total']
+    order_details_total_tax = order_details['total_tax']
+    order_details_payment_method = order_details['payment_method']
+    order_details_payment_method_title = order_details['payment_method_title']
+    order_details_transaction_id = order_details['transaction_id']
+    order_details_customer_ip_address = order_details['customer_ip_address']
+    order_details_created_via = order_details['created_via']
+    order_details_customer_id = order_details['customer_id']
+    order_details_customer_note = order_details['customer_note']
+    order_details_cart_hash = order_details['cart_hash']
+
+    # 保存billing訊息
+    billing = order_details['billing']
+    billing_first_name = billing['first_name']
+    billing_last_name = billing['last_name']
+    billing_company = billing['company']
+    billing_address_1 = billing['address_1']
+    billing_address_2 = billing['address_2']
+    billing_city = billing['city']
+    billing_state = billing['state']
+    billing_postcode = billing['postcode']
+    billing_country = billing['country']
+    billing_email = billing['email']
+    billing_phone = billing['phone']
+    # 保存shipping訊息
+    shipping = order_details['shipping']
+    shipping_first_name = shipping['first_name']
+    shipping_last_name = shipping['last_name']
+    shipping_company = shipping['company']
+    shipping_address_1 = shipping['address_1']
+    shipping_address_2 = shipping['address_2']
+    shipping_city = shipping['city']
+    # shipping_state = shipping['state']
+    shipping_postcode = shipping['postcode']
+    shipping_country = shipping['country']
+    # 保存line items
+    line_items = order_details['line_items']
+    # line_items_id = line_items['id']
+    # line_items_name = line_items['name']
+    # line_items_product_id = line_items['product_id']
+    # line_items_variation_id = line_items['variation_id']
+    # line_items_quantity = line_items['quantity']
+    # line_items_tax_class = line_items['tax_class']
+    # line_items_subtotal = line_items['subtotal']
+    # line_items_subtotal_tax = line_items['subtotal_tax']
+    # line_items_total = line_items['total']
+    # line_items_total_tax = line_items['total_tax']
+    # line_items_taxes = line_items['taxes']
+    # line_items_sku = line_items['sku']
+    # line_items_price = line_items['price']
+    # line_items_parent_name = line_items['parent_name']
+
+    # 保存資料庫
+    if order_details_status == 'cancelled':
+        order_info = Orders(order_details_id, order_details_parent_id, order_details_status, billing_first_name,
+                            billing_last_name, order_details_currency, order_details_version, order_details_total,
+                            order_details_total_tax,
+                            billing_company, billing_address_1, billing_address_2, billing_city, billing_state,
+                            billing_postcode, billing_country, billing_email, billing_phone, shipping_first_name,
+                            shipping_last_name, shipping_company, shipping_address_1, shipping_address_2, shipping_city,
+                            shipping_postcode, shipping_country, order_details_payment_method,
+                            order_details_payment_method_title, order_details_transaction_id,
+                            order_details_customer_ip_address, order_details_created_via, order_details_customer_id,
+                            order_details_customer_note, order_details_cart_hash)
+        db.session.add(order_info)
+        db.session.commit()
+        # 保存資料庫
+
+        for line_item in line_items:
+            line_items_id = line_item['id']
+            line_items_name = line_item['name']
+            line_items_product_id = line_item['product_id']
+            line_items_variation_id = line_item['variation_id']
+            line_items_quantity = line_item['quantity']
+            line_items_tax_class = line_item['tax_class']
+            line_items_subtotal = line_item['subtotal']
+            line_items_subtotal_tax = line_item['subtotal_tax']
+            line_items_total = line_item['total']
+            line_items_total_tax = line_item['total_tax']
+            line_items_taxes = line_item['taxes']
+            line_items_sku = line_item['sku']
+            line_items_price = line_item['price']
+            line_items_parent_name = line_item['parent_name']
+            line_items_info = OrdersLineItems(order_details_id, line_items_id, line_items_name,
+                                              line_items_product_id, line_items_variation_id, line_items_quantity,
+                                              line_items_tax_class, line_items_subtotal, line_items_subtotal_tax,
+                                              line_items_total,
+                                              line_items_total_tax, line_items_sku, line_items_price,
+                                              line_items_parent_name)
+            db.session.add(line_items_info)
+            db.session.commit()
+
+    print(jsonify(order_details))
+    return jsonify({
+        'success': True,
+        'msg': 'order record is create in blcokchain ',
+        'data': order_details
+    })
+
+
+@app.route('/pcs/api/v1/bc/cancel', methods=['POST'])
+def ordercancel():
+    request_data = request.data.decode('utf-8')
+    if not request_data:
+        return jsonify({
+            'success': False
+        })
+
+    # 本機測試時請打開
+    # j_request_data = json.loads(request_data)
+    # req_id = j_request_data['id']
+    # orderid = 'orders/' + str(req_id)
+    # # 無jwt調用方式
+    # # order_details = wcapi.get(orderid).json()
+    # r = requests.post(end_point_url_posts, data=payload)
+    # jwt_info = r.content.decode("utf-8").replace("'", '"')
+    # data = json.loads(jwt_info)
+    # my_headers = {'Authorization': "Bearer " + data['token']}
+    # res_order_details = requests.get('https://store.pyrarc.com/wp-json/wc/v3/orders/' + str(req_id), data=payload,
+    #                                  headers=my_headers)
+    # order_details = json.loads(res_order_details.content.decode("utf-8").replace("'", '"'))
+
+    # 正式環境webhook可以直接獲取到
+    order_details = json.loads(request_data)
+    order_details_id = order_details['id']
+    order_details_parent_id = order_details['parent_id']
+    order_details_status = order_details['status']
+    order_details_currency = order_details['currency']
+    order_details_version = order_details['version']
+    order_details_date_created = order_details['date_created']
+    order_details_date_modified = order_details['date_modified']
+    order_details_total = order_details['total']
+    order_details_total_tax = order_details['total_tax']
+    order_details_payment_method = order_details['payment_method']
+    order_details_payment_method_title = order_details['payment_method_title']
+    order_details_transaction_id = order_details['transaction_id']
+    order_details_customer_ip_address = order_details['customer_ip_address']
+    order_details_created_via = order_details['created_via']
+    order_details_customer_id = order_details['customer_id']
+    order_details_customer_note = order_details['customer_note']
+    order_details_cart_hash = order_details['cart_hash']
+
+    # 保存billing訊息
+    billing = order_details['billing']
+    billing_first_name = billing['first_name']
+    billing_last_name = billing['last_name']
+    billing_company = billing['company']
+    billing_address_1 = billing['address_1']
+    billing_address_2 = billing['address_2']
+    billing_city = billing['city']
+    billing_state = billing['state']
+    billing_postcode = billing['postcode']
+    billing_country = billing['country']
+    billing_email = billing['email']
+    billing_phone = billing['phone']
+    # 保存shipping訊息
+    shipping = order_details['shipping']
+    shipping_first_name = shipping['first_name']
+    shipping_last_name = shipping['last_name']
+    shipping_company = shipping['company']
+    shipping_address_1 = shipping['address_1']
+    shipping_address_2 = shipping['address_2']
+    shipping_city = shipping['city']
+    # shipping_state = shipping['state']
+    shipping_postcode = shipping['postcode']
+    shipping_country = shipping['country']
+    # 保存line items
+    line_items = order_details['line_items']
+    # line_items_id = line_items['id']
+    # line_items_name = line_items['name']
+    # line_items_product_id = line_items['product_id']
+    # line_items_variation_id = line_items['variation_id']
+    # line_items_quantity = line_items['quantity']
+    # line_items_tax_class = line_items['tax_class']
+    # line_items_subtotal = line_items['subtotal']
+    # line_items_subtotal_tax = line_items['subtotal_tax']
+    # line_items_total = line_items['total']
+    # line_items_total_tax = line_items['total_tax']
+    # line_items_taxes = line_items['taxes']
+    # line_items_sku = line_items['sku']
+    # line_items_price = line_items['price']
+    # line_items_parent_name = line_items['parent_name']
+
+    # 保存資料庫
+    order_info = Orders(order_details_id, order_details_parent_id, order_details_status, billing_first_name,
+                        billing_last_name, order_details_currency, order_details_version, order_details_total,
+                        order_details_total_tax,
+                        billing_company, billing_address_1, billing_address_2, billing_city, billing_state,
+                        billing_postcode, billing_country, billing_email, billing_phone, shipping_first_name,
+                        shipping_last_name, shipping_company, shipping_address_1, shipping_address_2, shipping_city,
+                        shipping_postcode, shipping_country, order_details_payment_method,
+                        order_details_payment_method_title, order_details_transaction_id,
+                        order_details_customer_ip_address, order_details_created_via, order_details_customer_id,
+                        order_details_customer_note, order_details_cart_hash)
+    db.session.add(order_info)
+    db.session.commit()
+    # 保存資料庫
+
+    for line_item in line_items:
+        line_items_id = line_item['id']
+        line_items_name = line_item['name']
+        line_items_product_id = line_item['product_id']
+        line_items_variation_id = line_item['variation_id']
+        line_items_quantity = line_item['quantity']
+        line_items_tax_class = line_item['tax_class']
+        line_items_subtotal = line_item['subtotal']
+        line_items_subtotal_tax = line_item['subtotal_tax']
+        line_items_total = line_item['total']
+        line_items_total_tax = line_item['total_tax']
+        line_items_taxes = line_item['taxes']
+        line_items_sku = line_item['sku']
+        line_items_price = line_item['price']
+        line_items_parent_name = line_item['parent_name']
+        line_items_info = OrdersLineItems(order_details_id, line_items_id, line_items_name,
+                                          line_items_product_id, line_items_variation_id, line_items_quantity,
+                                          line_items_tax_class, line_items_subtotal, line_items_subtotal_tax,
+                                          line_items_total,
+                                          line_items_total_tax, line_items_sku, line_items_price,
+                                          line_items_parent_name)
+        db.session.add(line_items_info)
+        db.session.commit()
 
     print(jsonify(order_details))
     return jsonify({
