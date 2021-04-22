@@ -6,6 +6,15 @@ from sqlalchemy import desc, func, and_
 
 from model import Orders, Inventory, db
 
+user_name = "pyrarc.app"
+user_passwd = "dOidZQSGR09BnHROt4ss#NT3"
+end_point_url_posts = "https://store.pyrarc.com/wp-json/jwt-auth/v1/token"
+
+payload = {
+    "username": user_name,
+    "password": user_passwd
+}
+
 
 def lineNotifyMessage(token, msg):
     headers = {
@@ -48,9 +57,24 @@ def inventory(customer_id: int):
 
     inventories = db.session.query(Inventory).filter_by(user_id=customer_id).join(subq, and_(Inventory.user_id == subq.c.user_id, Inventory.id == subq.c.max_id)).all()
 
+    r = requests.post(end_point_url_posts, data=payload)
+    jwt_info = r.content.decode("utf-8").replace("'", '"')
+    data = json.loads(jwt_info)
+    s = json.dumps(data, indent=4, sort_keys=True)
+    print(s)
+    token = data['token']
+    Auth_token = "Bearer " + token
+
+    my_headers = {'Authorization': Auth_token}
+
     if inventories:
+        # productlist = wcapi.get("products", params={"per_page": 20}).json()
+        for inv in inventories:
+            response_productlist = requests.get('https://store.pyrarc.com/wp-json/wc/v3/products/' + str(inv.product_id), data=payload, headers=my_headers)
+            productlist = json.loads(response_productlist.content.decode("utf-8").replace("'", '"'))
+            inv.product_name = productlist["name"]
         # inventory = inventories[0]
-        return jsonify([inventory.to_json() for inventory in inventories])
+        return jsonify([inventory.to_json_ext() for inventory in inventories])
     else:
         return jsonify({
             'message': 'data is not exist'
@@ -159,8 +183,8 @@ def inventorydelivery():
 
 
 # 獲取五筆指派紀錄
-def inventoryhistory(customer_id: int, product_id: int):
-    inventories = Inventory.query.filter_by(user_id=customer_id, product_id=product_id, order_id=0).order_by(
+def inventoryhistory(customer_id: int):
+    inventories = Inventory.query.filter_by(user_id=customer_id, order_id=0).order_by(
         desc(Inventory.id)).limit(5).all()
     if inventories:
         for inv in inventories:

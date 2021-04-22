@@ -236,6 +236,34 @@ class Inventory(db.Model):
             'remark': self.remark
         }
 
+    def to_json_ext(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'beging_inventory': self.beging_inventory,
+            'ending_Inventory': self.ending_inventory,
+            'adj_amount': self.adj_amount,
+            'create_time': self.create_time,
+            'modify_time': self.modify_time,
+            'transaction_id': self.transaction_id,
+            'order_id': self.order_id,
+            'product_id': self.product_id,
+            'product_name': self.product_name,
+            'create_by': self.create_by,
+            'order_source': self.order_source,
+            'shipping_first_name': self.shipping_first_name,
+            'shipping_last_name': self.shipping_last_name,
+            'shipping_company': self.shipping_company,
+            'shipping_address_1': self.shipping_address_1,
+            'shipping_address_2': self.shipping_address_2,
+            'shipping_city': self.shipping_city,
+            'shipping_postcode': self.shipping_postcode,
+            'shipping_country': self.shipping_country,
+            'shipping_phone': self.shipping_phone,
+            'shipment_number': self.shipment_number,
+            'remark': self.remark
+        }
+
 
 class InventoryMeta(db.Model):
     __tablename__ = 'inventorymeta'
