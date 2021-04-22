@@ -55,7 +55,7 @@ if mode == 'Debug':
 db.init_app(app)
 
 # 路由設定
-app.add_url_rule('/pcs/api/v1/inventories/<int:customer_id>/<int:product_id>', view_func=inventory)
+app.add_url_rule('/pcs/api/v1/inventories/<int:customer_id>', view_func=inventory)
 app.add_url_rule('/pcs/api/v1/inventory/history/<int:customer_id>/<int:product_id>', view_func=inventoryhistory)
 app.add_url_rule('/pcs/api/v1/inventory/add', methods=['GET', 'POST'], view_func=inventoryadd)
 app.add_url_rule('/pcs/api/v1/inventory/delivery', methods=['GET', 'POST'], view_func=inventorydelivery)
@@ -252,15 +252,6 @@ def order_details():
         db.session.add(line_items_info)
         db.session.commit()
 
-        # 庫存異動
-        beging_inventory, ending_inventory = getInvertoryNow(order_details_customer_id, line_items_product_id,
-                                                             line_items_quantity)
-        inventory = Inventory(order_details_customer_id, beging_inventory, ending_inventory, line_items_quantity,
-                              order_details_id, line_items_product_id, 'System',
-                              'Web', '', '', '', '', '', '', '', '', '')
-        db.session.add(inventory)
-        db.session.commit()
-
         # sql = "INSERT INTO Orders (order_id, parent_id, status, billing_first_name, billing_last_name)VALUES (" + str(
         #     order_details_id) + ", " + "" + str(order_details_parent_id) + ", " + str(order_details_status) + ", " + str(
         #     billing_first_name) + ", " + str(billing_last_name) + ")"
@@ -432,6 +423,53 @@ def orderupdate():
                                               line_items_total_tax, line_items_sku, line_items_price,
                                               line_items_parent_name)
             db.session.add(line_items_info)
+            db.session.commit()
+    elif order_details_status == 'completed':
+        order_info = Orders(order_details_id, order_details_parent_id, order_details_status, billing_first_name,
+                            billing_last_name, order_details_currency, order_details_version, order_details_total,
+                            order_details_total_tax,
+                            billing_company, billing_address_1, billing_address_2, billing_city, billing_state,
+                            billing_postcode, billing_country, billing_email, billing_phone, shipping_first_name,
+                            shipping_last_name, shipping_company, shipping_address_1, shipping_address_2, shipping_city,
+                            shipping_postcode, shipping_country, order_details_payment_method,
+                            order_details_payment_method_title, order_details_transaction_id,
+                            order_details_customer_ip_address, order_details_created_via, order_details_customer_id,
+                            order_details_customer_note, order_details_cart_hash)
+        db.session.add(order_info)
+        db.session.commit()
+        # 保存資料庫
+
+        for line_item in line_items:
+            line_items_id = line_item['id']
+            line_items_name = line_item['name']
+            line_items_product_id = line_item['product_id']
+            line_items_variation_id = line_item['variation_id']
+            line_items_quantity = line_item['quantity']
+            line_items_tax_class = line_item['tax_class']
+            line_items_subtotal = line_item['subtotal']
+            line_items_subtotal_tax = line_item['subtotal_tax']
+            line_items_total = line_item['total']
+            line_items_total_tax = line_item['total_tax']
+            line_items_taxes = line_item['taxes']
+            line_items_sku = line_item['sku']
+            line_items_price = line_item['price']
+            line_items_parent_name = line_item['parent_name']
+            line_items_info = OrdersLineItems(order_details_id, line_items_id, line_items_name,
+                                              line_items_product_id, line_items_variation_id, line_items_quantity,
+                                              line_items_tax_class, line_items_subtotal, line_items_subtotal_tax,
+                                              line_items_total,
+                                              line_items_total_tax, line_items_sku, line_items_price,
+                                              line_items_parent_name)
+            db.session.add(line_items_info)
+            db.session.commit()
+            #添加庫存
+            # 庫存異動
+            beging_inventory, ending_inventory = getInvertoryNow(order_details_customer_id, line_items_product_id,
+                                                                 line_items_quantity)
+            inventory = Inventory(order_details_customer_id, beging_inventory, ending_inventory, line_items_quantity,
+                                  order_details_id, line_items_product_id, 'System',
+                                  'Web', '', '', '', '', '', '', '', '', '')
+            db.session.add(inventory)
             db.session.commit()
 
     print(jsonify(order_details))
