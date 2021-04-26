@@ -4,7 +4,7 @@ import requests
 from flask import jsonify, app, request
 from sqlalchemy import desc, func, and_
 
-from model import Orders, Inventory, db
+from model import Orders, Inventory, db, Delivery
 
 user_name = "pyrarc.app"
 user_passwd = "dOidZQSGR09BnHROt4ss#NT3"
@@ -32,7 +32,10 @@ def getEndInvertory(user_id=None, product_id=None):
     invertory_info = Inventory.query.filter_by(user_id=user_id, product_id=product_id).order_by(
         desc(Inventory.id)).limit(
         1).all()
-    return invertory_info[0].ending_inventory
+    if invertory_info:
+        return invertory_info[0].ending_inventory
+    else:
+        return
 
 
 # 獲取最新庫存
@@ -52,10 +55,12 @@ def getInvertoryNow(user_id=None, product_id=None, adj_amount=None):
 # 查詢最新庫存by客戶ＩＤ跟產品號碼
 def inventory(customer_id: int):
     # inventories = Inventory.query.filter_by(user_id=customer_id, product_id=product_id).order_by(desc(Inventory.id)).limit(1).all()
-    #inventories = db.session.query(func.max(Inventory.id), Inventory.user_id, Inventory.product_id,Inventory.ending_inventory).filter_by(user_id=customer_id).group_by(Inventory.id,Inventory.user_id,Inventory.product_id,Inventory.ending_inventory).all()
-    subq = db.session.query(Inventory.user_id, Inventory.product_id, func.max(Inventory.id).label('max_id')).group_by(Inventory.user_id, Inventory.product_id).subquery('t2')
+    # inventories = db.session.query(func.max(Inventory.id), Inventory.user_id, Inventory.product_id,Inventory.ending_inventory).filter_by(user_id=customer_id).group_by(Inventory.id,Inventory.user_id,Inventory.product_id,Inventory.ending_inventory).all()
+    subq = db.session.query(Inventory.user_id, Inventory.product_id, func.max(Inventory.id).label('max_id')).group_by(
+        Inventory.user_id, Inventory.product_id).subquery('t2')
 
-    inventories = db.session.query(Inventory).filter_by(user_id=customer_id).join(subq, and_(Inventory.user_id == subq.c.user_id, Inventory.id == subq.c.max_id)).all()
+    inventories = db.session.query(Inventory).filter_by(user_id=customer_id).join(subq, and_(
+        Inventory.user_id == subq.c.user_id, Inventory.id == subq.c.max_id)).all()
 
     r = requests.post(end_point_url_posts, data=payload)
     jwt_info = r.content.decode("utf-8").replace("'", '"')
@@ -70,7 +75,9 @@ def inventory(customer_id: int):
     if inventories:
         # productlist = wcapi.get("products", params={"per_page": 20}).json()
         for inv in inventories:
-            response_productlist = requests.get('https://store.pyrarc.com/wp-json/wc/v3/products/' + str(inv.product_id), data=payload, headers=my_headers)
+            response_productlist = requests.get(
+                'https://store.pyrarc.com/wp-json/wc/v3/products/' + str(inv.product_id), data=payload,
+                headers=my_headers)
             productlist = json.loads(response_productlist.content.decode("utf-8").replace("'", '"'))
             inv.product_name = productlist["name"]
         # inventory = inventories[0]
@@ -94,7 +101,7 @@ def inventoryadd():
     # 獲取最新的庫存
     beging_inventory, ending_inventory = getInvertoryNow(user_id, product_id, adj_amount)
     inventory = Inventory(user_id, beging_inventory, ending_inventory, adj_amount, order_id, product_id, create_by,
-                          order_source, '', '', '', '', '', '', '', '', '')
+                          order_source, '', '', '', '', '', '', '', '', '', 0)
     db.session.add(inventory)
     db.session.commit()
     return jsonify({
@@ -104,7 +111,46 @@ def inventoryadd():
     })
 
 
-# 指配派送
+# # 指配派送
+# def inventorydelivery():
+#     req = request.data.decode("utf-8").replace("'", '"')
+#     data = json.loads(req)
+#     user_id = data['user_id']
+#     adj_amount = data['adj_amount']
+#     product_id = data['product_id']
+#     create_by = data['create_by']
+#     order_source = data['order_source']
+#     shipping_first_name = data['shipping_first_name']
+#     shipping_last_name = data['shipping_last_name']
+#     shipping_company = data['shipping_company']
+#     shipping_address_1 = data['shipping_address_1']
+#     shipping_city = data['shipping_city']
+#     shipping_postcode = data['shipping_postcode']
+#     shipping_country = data['shipping_country']
+#     shipping_phone = data['shipping_phone']
+#     remark = data['remark']
+#     # 判斷配送的數量是否超過現有庫存
+#     Inventory_now = getEndInvertory(user_id, product_id)
+#     if Inventory_now < adj_amount * -1:
+#         return jsonify({
+#             'message': 'Quantities is not enough'
+#         })
+#     # 獲取最新的庫存
+#     beging_inventory, ending_inventory = getInvertoryNow(user_id, product_id, adj_amount)
+#     inventory = Inventory(user_id, beging_inventory, ending_inventory, adj_amount, 0, product_id, create_by,
+#                           order_source, shipping_first_name, shipping_last_name, shipping_company, shipping_address_1,
+#                           shipping_city, shipping_postcode, shipping_country, shipping_phone, remark)
+#     db.session.add(inventory)
+#     db.session.commit()
+#     return jsonify({
+#         'success': True,
+#         'msg': 'inventory is added now ',
+#         'data': data
+#     })
+
+
+# 單一物件指派
+
 def inventorydelivery():
     req = request.data.decode("utf-8").replace("'", '"')
     data = json.loads(req)
@@ -128,48 +174,17 @@ def inventorydelivery():
         return jsonify({
             'message': 'Quantities is not enough'
         })
-    # 獲取最新的庫存
-    beging_inventory, ending_inventory = getInvertoryNow(user_id, product_id, adj_amount)
-    inventory = Inventory(user_id, beging_inventory, ending_inventory, adj_amount, 0, product_id, create_by,
-                          order_source, shipping_first_name, shipping_last_name, shipping_company, shipping_address_1,
-                          shipping_city, shipping_postcode, shipping_country, shipping_phone, remark)
-    db.session.add(inventory)
+    # 產生配送單
+    delivery = Delivery(user_id, create_by, order_source, shipping_first_name, shipping_last_name, shipping_company,
+                        shipping_address_1, shipping_city, shipping_postcode, shipping_country,
+                        shipping_phone)
+    db.session.add(delivery)
     db.session.commit()
-    return jsonify({
-        'success': True,
-        'msg': 'inventory is added now ',
-        'data': data
-    })
-
-
-def inventorydelivery():
-    req = request.data.decode("utf-8").replace("'", '"')
-    data = json.loads(req)
-    user_id = data['user_id']
-    adj_amount = data['adj_amount']
-    product_id = data['product_id']
-    create_by = data['create_by']
-    order_source = data['order_source']
-    shipping_first_name = data['shipping_first_name']
-    shipping_last_name = data['shipping_last_name']
-    shipping_company = data['shipping_company']
-    shipping_address_1 = data['shipping_address_1']
-    shipping_city = data['shipping_city']
-    shipping_postcode = data['shipping_postcode']
-    shipping_country = data['shipping_country']
-    shipping_phone = data['shipping_phone']
-    remark = data['remark']
-    # 判斷配送的數量是否超過現有庫存
-    Inventory_now = getEndInvertory(user_id, product_id)
-    if Inventory_now < adj_amount * -1:
-        return jsonify({
-            'message': 'Quantities is not enough'
-        })
     # 獲取最新的庫存
     beging_inventory, ending_inventory = getInvertoryNow(user_id, product_id, adj_amount)
     inventory = Inventory(user_id, beging_inventory, ending_inventory, adj_amount, 0, product_id, create_by,
                           order_source, shipping_first_name, shipping_last_name, shipping_company, shipping_address_1,
-                          shipping_city, shipping_postcode, shipping_country, shipping_phone, remark)
+                          shipping_city, shipping_postcode, shipping_country, shipping_phone, remark, delivery.id)
     db.session.add(inventory)
     db.session.commit()
     token = 'M5g5yVHMV2gc6iRvs1xu5Bsb9OEj0Wux8pQcKknldMo'
@@ -182,14 +197,120 @@ def inventorydelivery():
     })
 
 
-# 獲取五筆指派紀錄
+# 多物件指派
+
+def inventorydeliveries():
+    req = request.data.decode("utf-8").replace("'", '"')
+    data = json.loads(req)
+    user_id = data['user_id']
+    adj_amount_set = data['adj_amount']
+    create_by = data['create_by']
+    order_source = data['order_source']
+    shipping_first_name = data['shipping_first_name']
+    shipping_last_name = data['shipping_last_name']
+    shipping_company = data['shipping_company']
+    shipping_address_1 = data['shipping_address_1']
+    shipping_city = data['shipping_city']
+    shipping_postcode = data['shipping_postcode']
+    shipping_country = data['shipping_country']
+    shipping_phone = data['shipping_phone']
+    remark = data['remark']
+
+    # 產生配送單
+    delivery = Delivery(user_id, create_by, order_source, shipping_first_name, shipping_last_name, shipping_company,
+                        shipping_address_1, shipping_city, shipping_postcode, shipping_country,
+                        shipping_phone)
+    db.session.add(delivery)
+    db.session.commit()
+    # 獲取最新的庫存
+    adj_amount_infos = adj_amount_set.split(';')
+    for adj_amount_info in adj_amount_infos:
+        adj_amount_detial = adj_amount_info.split(',')
+        # 判斷配送的數量是否超過現有庫存
+        product_id = int(adj_amount_detial[0])
+        adj_amount = int(adj_amount_detial[2])
+        Inventory_now = getEndInvertory(user_id, product_id)
+        if Inventory_now is not None:
+            if Inventory_now < adj_amount:
+                return jsonify({
+                    'message': 'Quantities is not enough'
+                })
+        else:
+            return jsonify({
+                'message': 'Quantities is not exist'
+            })
+        #多物件指派時，扣除數量需修正為負數
+        beging_inventory, ending_inventory = getInvertoryNow(user_id, product_id, adj_amount * -1)
+        inventory = Inventory(user_id, beging_inventory, ending_inventory, adj_amount * -1, 0, product_id, create_by,
+                              order_source, shipping_first_name, shipping_last_name, shipping_company,
+                              shipping_address_1,
+                              shipping_city, shipping_postcode, shipping_country, shipping_phone, remark, delivery.id)
+        db.session.add(inventory)
+        db.session.commit()
+
+    # line通知
+    token = 'M5g5yVHMV2gc6iRvs1xu5Bsb9OEj0Wux8pQcKknldMo'
+    msg = '用戶已指派寄送，請登入平台，輸入物流單號 https://storeapi.pyrarc.com/backend/inventorylist?mid=' + str(inventory.id)
+    lineNotifyMessage(token, msg)
+    return jsonify({
+        'success': True,
+        'msg': 'inventory is added now ',
+        'data': data
+    })
+
+
+# 獲取五筆庫存紀錄
 def inventoryhistory(customer_id: int):
-    inventories = Inventory.query.filter_by(user_id=customer_id, order_id=0).order_by(
-        desc(Inventory.id)).limit(5).all()
+    inventories = Inventory.query.filter_by(user_id=customer_id, order_id=0).order_by(desc(Inventory.id)).limit(5).all()
     if inventories:
         for inv in inventories:
             inv.adj_amount = int(inv.adj_amount) * -1
         return jsonify([inventory.to_json() for inventory in inventories])
+    else:
+        return jsonify({
+            'message': 'data is not exist'
+        })
+
+
+# 獲取五筆指派紀錄
+def deliveryhistory(customer_id: int):
+    # inventories =  db.session.query(func.sum(Inventory.ending_inventory), Inventory.user_id, Inventory.product_id).filter_by(user_id=customer_id).group_by(Inventory.user_id,Inventory.product_id).all()
+    subq = db.session.query(Inventory.user_id, Inventory.product_id, Inventory.delivery_id, Inventory.ending_inventory, Inventory.adj_amount, func.max(Inventory.id).label('max_id')).group_by(Inventory.user_id, Inventory.product_id, Inventory.delivery_id, Inventory.ending_inventory, Inventory.adj_amount).subquery('t2')
+
+    deliveries = db.session.query(Delivery.id, Delivery.user_id, func.sum(subq.c.ending_inventory), func.sum(subq.c.adj_amount), Delivery.create_time,
+                                  Delivery.modify_time, Delivery.create_by, Delivery.order_source, Delivery.location,
+                                  Delivery.shipping_first_name, Delivery.shipping_last_name, Delivery.shipping_company,
+                                  Delivery.shipping_address_1, Delivery.shipping_city, Delivery.shipping_postcode,
+                                  Delivery.shipping_country, Delivery.shipping_phone,
+                                  Delivery.shipment_number).filter_by(user_id=customer_id).join(subq, and_(
+        Delivery.user_id == subq.c.user_id, Delivery.id == subq.c.delivery_id)).group_by(Delivery.user_id,
+                                                                                         Delivery.id).all()
+
+    delivery_infos = []
+
+    if deliveries:
+        for delivery in deliveries:
+            delivery_info = {
+                'id': delivery.id,
+                'user_id': delivery.user_id,
+                'ending_inventory': str(delivery[2]),
+                'total_adj_amount': int(delivery[3]) * -1,
+                'create_time': delivery.create_time,
+                'modify_time': delivery.modify_time,
+                'create_by': delivery.create_by,
+                'order_source': delivery.order_source,
+                'shipping_first_name': delivery.shipping_first_name,
+                'shipping_last_name': delivery.shipping_last_name,
+                'shipping_company': delivery.shipping_company,
+                'shipping_address_1': delivery.shipping_address_1,
+                'shipping_city': delivery.shipping_city,
+                'shipping_postcode': delivery.shipping_postcode,
+                'shipping_country': delivery.shipping_country,
+                'shipping_phone': delivery.shipping_phone,
+                'shipment_number': delivery.shipment_number
+            }
+            delivery_infos.append(delivery_info)
+        return jsonify([info for info in delivery_infos])
     else:
         return jsonify({
             'message': 'data is not exist'

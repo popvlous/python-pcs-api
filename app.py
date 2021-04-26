@@ -5,7 +5,8 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from woocommerce import API
 from config import config_dict
-from inventory import inventory, inventoryadd, getInvertoryNow, inventorydelivery, inventoryhistory
+from inventory import inventory, inventoryadd, getInvertoryNow, inventorydelivery, inventoryhistory, \
+    inventorydeliveries, deliveryhistory
 from model import db, Orders, OrdersLineItems, Inventory
 
 pymysql.install_as_MySQLdb()
@@ -36,7 +37,7 @@ payload = {
 
 # 正式環境請修正mode = 'Production'
 
-mode = 'Production'
+mode = 'Debug'
 app = Flask(__name__)
 # app.config["SERVER_NAME"] = 'test.com:5000'
 
@@ -57,8 +58,10 @@ db.init_app(app)
 # 路由設定
 app.add_url_rule('/pcs/api/v1/inventories/<int:customer_id>', view_func=inventory)
 app.add_url_rule('/pcs/api/v1/inventory/history/<int:customer_id>', view_func=inventoryhistory)
+app.add_url_rule('/pcs/api/v1/inventory/delivery/history/<int:customer_id>', view_func=deliveryhistory)
 app.add_url_rule('/pcs/api/v1/inventory/add', methods=['GET', 'POST'], view_func=inventoryadd)
 app.add_url_rule('/pcs/api/v1/inventory/delivery', methods=['GET', 'POST'], view_func=inventorydelivery)
+app.add_url_rule('/pcs/api/v1/inventory/deliveries', methods=['GET', 'POST'], view_func=inventorydeliveries)
 
 
 # @app.route('/', subdomain="admin")
@@ -424,6 +427,8 @@ def orderupdate():
                                               line_items_parent_name)
             db.session.add(line_items_info)
             db.session.commit()
+            # 庫存異動 取消時的庫存異動，須先判斷原訂單庫存是否存在
+
     elif order_details_status == 'completed':
         order_info = Orders(order_details_id, order_details_parent_id, order_details_status, billing_first_name,
                             billing_last_name, order_details_currency, order_details_version, order_details_total,
