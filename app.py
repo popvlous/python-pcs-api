@@ -37,7 +37,7 @@ payload = {
 
 # 正式環境請修正mode = 'Production'
 
-mode = 'Debug'
+mode = 'Production'
 app = Flask(__name__)
 # app.config["SERVER_NAME"] = 'test.com:5000'
 
