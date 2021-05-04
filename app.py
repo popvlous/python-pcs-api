@@ -8,6 +8,7 @@ from config import config_dict
 from inventory import inventory, inventoryadd, getInvertoryNow, inventorydelivery, inventoryhistory, \
     inventorydeliveries, deliveryhistory
 from model import db, Orders, OrdersLineItems, Inventory
+from util import insertBlockChainOrder, insertBlockChainInventory, insertBlockChainLineItem, updateBlockChainOrder
 
 pymysql.install_as_MySQLdb()
 
@@ -35,9 +36,16 @@ payload = {
     "password": user_passwd
 }
 
+# 區塊鏈基礎訊息
+token = "SEY3QW9ES2ZBbw=="
+headers = {
+    "Authorization": "Bearer " + token,
+    "Content-Type": "application/json"
+}
+
 # 正式環境請修正mode = 'Production'
 
-mode = 'Production'
+mode = 'Debug'
 app = Flask(__name__)
 # app.config["SERVER_NAME"] = 'test.com:5000'
 
@@ -126,8 +134,9 @@ def showcustomers():
     })
 
 
+# 獲取單所有用戶的用戶訂單訊息
 @app.route('/pcs/api/v1/order')
-def showorder():
+def showorders():
     orders = Orders.query.filter().all()
     json_format = json.dumps(orders)
     print(json_format)
@@ -137,26 +146,67 @@ def showorder():
     })
 
 
+# 獲取單一用戶所有訂單訊息
+@app.route('/pcs/api/v1/order/<int:customer_id>')
+def showorder(customer_id: int):
+    order_infos = []
+    orders = Orders.query.filter_by(customer_id=customer_id).all()
+
+    if orders:
+        return jsonify([order.to_json() for order in orders])
+    else:
+        return jsonify({
+            'message': 'data is not exist'
+        })
+
+
+# 獲取單一用戶所有訂單區塊鏈訊息
+@app.route('/pcs/api/v1/order/bc/<int:customer_id>')
+def showbcorder(customer_id: int):
+    order_infos = []
+    orders = Orders.query.filter_by(customer_id=customer_id).all()
+
+    if orders:
+        # productlist = wcapi.get("products", params={"per_page": 20}).json()
+        for order in orders:
+            response_orderlist = requests.get(
+                'https://ccapi.stag.nexuera.com/orders/query/' + str(order.order_id), headers=headers, verify=False)
+            # productlist = json.loads(response_orderlist.content.decode("utf-8").replace("'", '"'))
+            if len(response_orderlist.content) == 0:
+                order.checkinfo = False
+            else:
+                order.checkinfo = True
+        return jsonify([order.to_json_ext() for order in orders])
+    else:
+        return jsonify({
+            'message': 'data is not exist'
+        })
+
+
 @app.route('/pcs/api/v1/bc', methods=['POST'])
 def order_details():
     request_data = request.data.decode('utf-8')
+    if not request_data:
+        return jsonify({
+            'success': False
+        })
 
     # 本機測試時請打開
-    # j_request_data = json.loads(request_data)
-    # req_id = j_request_data['id']
-    # orderid = 'orders/' + str(req_id)
-    # # 無jwt調用方式
-    # # order_details = wcapi.get(orderid).json()
-    # r = requests.post(end_point_url_posts, data=payload)
-    # jwt_info = r.content.decode("utf-8").replace("'", '"')
-    # data = json.loads(jwt_info)
-    # my_headers = {'Authorization': "Bearer " + data['token']}
-    # res_order_details = requests.get('https://store.pyrarc.com/wp-json/wc/v3/orders/' + str(req_id), data=payload,
-    #                                  headers=my_headers)
-    # order_details = json.loads(res_order_details.content.decode("utf-8").replace("'", '"'))
+    j_request_data = json.loads(request_data)
+    req_id = j_request_data['id']
+    orderid = 'orders/' + str(req_id)
+    # 無jwt調用方式
+    # order_details = wcapi.get(orderid).json()
+    r = requests.post(end_point_url_posts, data=payload)
+    jwt_info = r.content.decode("utf-8").replace("'", '"')
+    data = json.loads(jwt_info)
+    my_headers = {'Authorization': "Bearer " + data['token']}
+    res_order_details = requests.get('https://store.pyrarc.com/wp-json/wc/v3/orders/' + str(req_id), data=payload,
+                                     headers=my_headers)
+    order_details = json.loads(res_order_details.content.decode("utf-8").replace("'", '"'))
 
     # 正式環境webhook可以直接獲取到
-    order_details = json.loads(request_data)
+    # order_details = json.loads(request_data)
     order_details_id = order_details['id']
     order_details_parent_id = order_details['parent_id']
     order_details_status = order_details['status']
@@ -196,7 +246,7 @@ def order_details():
     shipping_address_1 = shipping['address_1']
     shipping_address_2 = shipping['address_2']
     shipping_city = shipping['city']
-    # shipping_state = shipping['state']
+    shipping_state = shipping['state']
     shipping_postcode = shipping['postcode']
     shipping_country = shipping['country']
     # 保存line items
@@ -223,12 +273,14 @@ def order_details():
                         billing_company, billing_address_1, billing_address_2, billing_city, billing_state,
                         billing_postcode, billing_country, billing_email, billing_phone, shipping_first_name,
                         shipping_last_name, shipping_company, shipping_address_1, shipping_address_2, shipping_city,
+                        shipping_state,
                         shipping_postcode, shipping_country, order_details_payment_method,
                         order_details_payment_method_title, order_details_transaction_id,
                         order_details_customer_ip_address, order_details_created_via, order_details_customer_id,
                         order_details_customer_note, order_details_cart_hash)
     db.session.add(order_info)
     db.session.commit()
+
     # 保存資料庫
 
     for line_item in line_items:
@@ -254,6 +306,7 @@ def order_details():
                                           line_items_parent_name)
         db.session.add(line_items_info)
         db.session.commit()
+        insertBlockChainLineItem(line_items_info)
 
         # sql = "INSERT INTO Orders (order_id, parent_id, status, billing_first_name, billing_last_name)VALUES (" + str(
         #     order_details_id) + ", " + "" + str(order_details_parent_id) + ", " + str(order_details_status) + ", " + str(
@@ -314,21 +367,21 @@ def orderupdate():
         })
 
     # 本機測試時請打開
-    # j_request_data = json.loads(request_data)
-    # req_id = j_request_data['id']
-    # orderid = 'orders/' + str(req_id)
-    # # 無jwt調用方式
-    # # order_details = wcapi.get(orderid).json()
-    # r = requests.post(end_point_url_posts, data=payload)
-    # jwt_info = r.content.decode("utf-8").replace("'", '"')
-    # data = json.loads(jwt_info)
-    # my_headers = {'Authorization': "Bearer " + data['token']}
-    # res_order_details = requests.get('https://store.pyrarc.com/wp-json/wc/v3/orders/' + str(req_id), data=payload,
-    #                                  headers=my_headers)
-    # order_details = json.loads(res_order_details.content.decode("utf-8").replace("'", '"'))
+    j_request_data = json.loads(request_data)
+    req_id = j_request_data['id']
+    orderid = 'orders/' + str(req_id)
+    # 無jwt調用方式
+    # order_details = wcapi.get(orderid).json()
+    r = requests.post(end_point_url_posts, data=payload)
+    jwt_info = r.content.decode("utf-8").replace("'", '"')
+    data = json.loads(jwt_info)
+    my_headers = {'Authorization': "Bearer " + data['token']}
+    res_order_details = requests.get('https://store.pyrarc.com/wp-json/wc/v3/orders/' + str(req_id), data=payload,
+                                     headers=my_headers)
+    order_details = json.loads(res_order_details.content.decode("utf-8").replace("'", '"'))
 
     # 正式環境webhook可以直接獲取到
-    order_details = json.loads(request_data)
+    # order_details = json.loads(request_data)
     order_details_id = order_details['id']
     order_details_parent_id = order_details['parent_id']
     order_details_status = order_details['status']
@@ -368,7 +421,7 @@ def orderupdate():
     shipping_address_1 = shipping['address_1']
     shipping_address_2 = shipping['address_2']
     shipping_city = shipping['city']
-    # shipping_state = shipping['state']
+    shipping_state = shipping['state']
     shipping_postcode = shipping['postcode']
     shipping_country = shipping['country']
     # 保存line items
@@ -396,12 +449,14 @@ def orderupdate():
                             billing_company, billing_address_1, billing_address_2, billing_city, billing_state,
                             billing_postcode, billing_country, billing_email, billing_phone, shipping_first_name,
                             shipping_last_name, shipping_company, shipping_address_1, shipping_address_2, shipping_city,
+                            shipping_postcode,
                             shipping_postcode, shipping_country, order_details_payment_method,
                             order_details_payment_method_title, order_details_transaction_id,
                             order_details_customer_ip_address, order_details_created_via, order_details_customer_id,
                             order_details_customer_note, order_details_cart_hash)
         db.session.add(order_info)
         db.session.commit()
+        updateBlockChainOrder(order_details)
         # 保存資料庫
 
         for line_item in line_items:
@@ -427,22 +482,39 @@ def orderupdate():
                                               line_items_parent_name)
             db.session.add(line_items_info)
             db.session.commit()
+            insertBlockChainLineItem(line_items_info)
             # 庫存異動 取消時的庫存異動，須先判斷原訂單庫存是否存在
+            inventory_info = Inventory.query.filter_by(user_id=order_details_customer_id,
+                                                       product_id=line_items_product_id,
+                                                       order_id=order_details_id).limit(1).all()
+            if inventory_info:
+                beging_inventory, ending_inventory = getInvertoryNow(order_details_customer_id, line_items_product_id,
+                                                                     line_items_quantity * -1)
+                inventory = Inventory(order_details_customer_id, beging_inventory, ending_inventory,
+                                      line_items_quantity * -1,
+                                      order_details_id, line_items_product_id, 'System',
+                                      'Web', '', '', '', '', '', '', '', '', '', 0)
+                db.session.add(inventory)
+                db.session.commit()
+
+
 
     elif order_details_status == 'completed':
+        # 訂單付款完成，增加庫存
         order_info = Orders(order_details_id, order_details_parent_id, order_details_status, billing_first_name,
                             billing_last_name, order_details_currency, order_details_version, order_details_total,
                             order_details_total_tax,
                             billing_company, billing_address_1, billing_address_2, billing_city, billing_state,
                             billing_postcode, billing_country, billing_email, billing_phone, shipping_first_name,
                             shipping_last_name, shipping_company, shipping_address_1, shipping_address_2, shipping_city,
+                            shipping_state,
                             shipping_postcode, shipping_country, order_details_payment_method,
                             order_details_payment_method_title, order_details_transaction_id,
                             order_details_customer_ip_address, order_details_created_via, order_details_customer_id,
                             order_details_customer_note, order_details_cart_hash)
         db.session.add(order_info)
         db.session.commit()
-        # 保存資料庫
+        updateBlockChainOrder(order_details)
 
         for line_item in line_items:
             line_items_id = line_item['id']
@@ -467,15 +539,17 @@ def orderupdate():
                                               line_items_parent_name)
             db.session.add(line_items_info)
             db.session.commit()
-            #添加庫存
-            # 庫存異動
+            insertBlockChainLineItem(line_items_info)
+
+            # 添加庫存
             beging_inventory, ending_inventory = getInvertoryNow(order_details_customer_id, line_items_product_id,
                                                                  line_items_quantity)
             inventory = Inventory(order_details_customer_id, beging_inventory, ending_inventory, line_items_quantity,
                                   order_details_id, line_items_product_id, 'System',
-                                  'Web', '', '', '', '', '', '', '', '', '')
+                                  'Web', '', '', '', '', '', '', '', '', '', 0)
             db.session.add(inventory)
             db.session.commit()
+            insertBlockChainInventory(inventory)
 
     print(jsonify(order_details))
     return jsonify({
@@ -548,7 +622,7 @@ def ordercancel():
     shipping_address_1 = shipping['address_1']
     shipping_address_2 = shipping['address_2']
     shipping_city = shipping['city']
-    # shipping_state = shipping['state']
+    shipping_state = shipping['state']
     shipping_postcode = shipping['postcode']
     shipping_country = shipping['country']
     # 保存line items
@@ -575,6 +649,7 @@ def ordercancel():
                         billing_company, billing_address_1, billing_address_2, billing_city, billing_state,
                         billing_postcode, billing_country, billing_email, billing_phone, shipping_first_name,
                         shipping_last_name, shipping_company, shipping_address_1, shipping_address_2, shipping_city,
+                        shipping_state,
                         shipping_postcode, shipping_country, order_details_payment_method,
                         order_details_payment_method_title, order_details_transaction_id,
                         order_details_customer_ip_address, order_details_created_via, order_details_customer_id,

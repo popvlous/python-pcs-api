@@ -48,7 +48,7 @@ class Orders(db.Model):
     shipping_address_1 = db.Column(db.String(500), nullable=True)
     shipping_address_2 = db.Column(db.String(500), nullable=True)
     shipping_city = db.Column(db.String(50), nullable=True)
-    # shipping_state = shipping['state']
+    shipping_state = db.Column(db.String(50), nullable=True)
     shipping_postcode = db.Column(db.String(50), nullable=True)
     shipping_country = db.Column(db.String(50), nullable=True)
 
@@ -56,6 +56,7 @@ class Orders(db.Model):
                  total_tax, billing_company, billing_address_1, billing_address_2, billing_city, billing_state,
                  billing_postcode, billing_country, billing_email, billing_phone, shipping_first_name,
                  shipping_last_name, shipping_company, shipping_address_1, shipping_address_2, shipping_city,
+                 shipping_state,
                  shipping_postcode, shipping_country, payment_method, payment_method_title, transaction_id,
                  customer_ip_address, created_via, customer_id, customer_note, cart_hash):
         self.order_id = order_id
@@ -84,6 +85,7 @@ class Orders(db.Model):
         self.shipping_address_1 = shipping_address_1
         self.shipping_address_2 = shipping_address_2
         self.shipping_city = shipping_city
+        self.shipping_state = shipping_state
         self.shipping_postcode = shipping_postcode
         self.shipping_country = shipping_country
         self.payment_method = payment_method
@@ -94,6 +96,91 @@ class Orders(db.Model):
         self.customer_id = customer_id
         self.customer_note = customer_note
         self.cart_hash = cart_hash
+
+    def to_json(self):
+        return {
+            'id': self.id,
+            'order_id': self.order_id,
+            'parent_id': self.parent_id,
+            'state': self.state,
+            'billing_first_name': self.billing_first_name,
+            'billing_last_name': self.billing_last_name,
+            'currency': self.currency,
+            'version': self.version,
+            'total': self.total,
+            'total_tax': self.total_tax,
+            'date_created': self.date_created,
+            'date_modified': self.date_modified,
+            'billing_company': self.billing_company,
+            'billing_address_1': self.billing_address_1,
+            'billing_address_2': self.billing_address_2,
+            'billing_city': self.billing_city,
+            'billing_state': self.billing_state,
+            'billing_postcode': self.billing_postcode,
+            'billing_country': self.billing_country,
+            'billing_email': self.billing_email,
+            'billing_phone': self.billing_phone,
+            'shipping_first_name': self.shipping_first_name,
+            'shipping_last_name': self.shipping_last_name,
+            'shipping_company': self.shipping_company,
+            'shipping_address_1': self.shipping_address_1,
+            'shipping_address_2': self.shipping_address_2,
+            'shipping_city': self.shipping_city,
+            'shipping_state': self.shipping_state,
+            'shipping_postcode': self.shipping_postcode,
+            'shipping_country': self.shipping_country,
+            'payment_method': self.payment_method,
+            'payment_method_title': self.payment_method_title,
+            'transaction_id': self.transaction_id,
+            'customer_ip_address': self.customer_ip_address,
+            'created_via': self.created_via,
+            'customer_id': self.customer_id,
+            'customer_note': self.customer_note,
+            'cart_hash': self.cart_hash
+        }
+
+    def to_json_ext(self):
+        return {
+            'id': self.id,
+            'order_id': self.order_id,
+            'parent_id': self.parent_id,
+            'state': self.state,
+            'billing_first_name': self.billing_first_name,
+            'billing_last_name': self.billing_last_name,
+            'currency': self.currency,
+            'version': self.version,
+            'total': self.total,
+            'total_tax': self.total_tax,
+            'date_created': self.date_created,
+            'date_modified': self.date_modified,
+            'billing_company': self.billing_company,
+            'billing_address_1': self.billing_address_1,
+            'billing_address_2': self.billing_address_2,
+            'billing_city': self.billing_city,
+            'billing_state': self.billing_state,
+            'billing_postcode': self.billing_postcode,
+            'billing_country': self.billing_country,
+            'billing_email': self.billing_email,
+            'billing_phone': self.billing_phone,
+            'shipping_first_name': self.shipping_first_name,
+            'shipping_last_name': self.shipping_last_name,
+            'shipping_company': self.shipping_company,
+            'shipping_address_1': self.shipping_address_1,
+            'shipping_address_2': self.shipping_address_2,
+            'shipping_city': self.shipping_city,
+            'shipping_state': self.shipping_state,
+            'shipping_postcode': self.shipping_postcode,
+            'shipping_country': self.shipping_country,
+            'payment_method': self.payment_method,
+            'payment_method_title': self.payment_method_title,
+            'transaction_id': self.transaction_id,
+            'customer_ip_address': self.customer_ip_address,
+            'created_via': self.created_via,
+            'customer_id': self.customer_id,
+            'customer_note': self.customer_note,
+            'cart_hash': self.cart_hash,
+            'checkinfo': self.checkinfo,
+        }
 
 
 class OrdersLineItems(db.Model):
