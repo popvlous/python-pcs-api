@@ -386,6 +386,7 @@ class Delivery(db.Model):
     shipping_address_1 = db.Column(db.String(500), nullable=True)
     shipping_address_2 = db.Column(db.String(500), nullable=True)
     shipping_city = db.Column(db.String(50), nullable=True)
+    shipping_state = db.Column(db.String(50), nullable=True)
     shipping_postcode = db.Column(db.String(50), nullable=True)
     shipping_country = db.Column(db.String(50), nullable=True)
     shipping_phone = db.Column(db.String(50), nullable=True)
@@ -393,7 +394,7 @@ class Delivery(db.Model):
     remark = db.Column(db.String(50))
 
     def __init__(self, user_id, create_by, order_source, shipping_first_name, shipping_last_name, shipping_company,
-                 shipping_address_1, shipping_city, shipping_postcode, shipping_country,
+                 shipping_address_1, shipping_city, shipping_state, shipping_postcode, shipping_country,
                  shipping_phone):
         self.user_id = user_id
         self.create_by = create_by
@@ -405,6 +406,7 @@ class Delivery(db.Model):
         self.shipping_company = shipping_company
         self.shipping_address_1 = shipping_address_1
         self.shipping_city = shipping_city
+        self.shipping_state = shipping_state
         self.shipping_postcode = shipping_postcode
         self.shipping_country = shipping_country
         self.shipping_phone = shipping_phone
@@ -421,6 +423,7 @@ class Delivery(db.Model):
             'shipping_company': self.shipping_company,
             'shipping_address_1': self.shipping_address_1,
             'shipping_city': self.shipping_city,
+            'shipping_state': self.shipping_state,
             'shipping_postcode': self.shipping_postcode,
             'shipping_country': self.shipping_country,
             'shipping_phone': self.shipping_phone,

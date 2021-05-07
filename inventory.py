@@ -164,6 +164,7 @@ def inventorydelivery():
     shipping_company = data['shipping_company']
     shipping_address_1 = data['shipping_address_1']
     shipping_city = data['shipping_city']
+    shipping_state = data['shipping_state']
     shipping_postcode = data['shipping_postcode']
     shipping_country = data['shipping_country']
     shipping_phone = data['shipping_phone']
@@ -176,7 +177,7 @@ def inventorydelivery():
         })
     # 產生配送單
     delivery = Delivery(user_id, create_by, order_source, shipping_first_name, shipping_last_name, shipping_company,
-                        shipping_address_1, shipping_city, shipping_postcode, shipping_country,
+                        shipping_address_1, shipping_city, shipping_state,shipping_postcode, shipping_country,
                         shipping_phone)
     db.session.add(delivery)
     db.session.commit()
@@ -211,6 +212,7 @@ def inventorydeliveries():
     shipping_company = data['shipping_company']
     shipping_address_1 = data['shipping_address_1']
     shipping_city = data['shipping_city']
+    shipping_state = data['shipping_state']
     shipping_postcode = data['shipping_postcode']
     shipping_country = data['shipping_country']
     shipping_phone = data['shipping_phone']
@@ -218,7 +220,7 @@ def inventorydeliveries():
 
     # 產生配送單
     delivery = Delivery(user_id, create_by, order_source, shipping_first_name, shipping_last_name, shipping_company,
-                        shipping_address_1, shipping_city, shipping_postcode, shipping_country,
+                        shipping_address_1, shipping_city, shipping_state, shipping_postcode, shipping_country,
                         shipping_phone)
     db.session.add(delivery)
     db.session.commit()
