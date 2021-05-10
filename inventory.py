@@ -230,12 +230,12 @@ def inventorydeliveries():
             if Inventory_now is not None:
                 if Inventory_now < adj_amount:
                     return jsonify({
-                        'success': False,
+                        'success': 'false',
                         'msg': str(product_id) + ' Quantities is not enough'
                     })
             else:
                 return jsonify({
-                    'success': False,
+                    'success': 'false',
                     'msg': 'Quantities is not exist'
                 })
 
@@ -265,7 +265,7 @@ def inventorydeliveries():
     msg = '用戶已指派寄送，請登入平台，輸入物流單號 https://storeapi.pyrarc.com/backend/inventorylist?mid=' + str(inventory.id)
     lineNotifyMessage(token, msg)
     return jsonify({
-        'success': True,
+        'success': 'true',
         'msg': 'inventory is added now '
     })
 
