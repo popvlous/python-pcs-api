@@ -202,6 +202,7 @@ def inventorydelivery():
 
 def inventorydeliveries():
     req = request.data.decode("utf-8").replace("'", '"')
+    print(req)
     data = json.loads(req)
     user_id = data['user_id']
     adj_amount_set = data['adj_amount']
@@ -218,13 +219,7 @@ def inventorydeliveries():
     shipping_phone = data['shipping_phone']
     remark = data['remark']
 
-    # 產生配送單
-    delivery = Delivery(user_id, create_by, order_source, shipping_first_name, shipping_last_name, shipping_company,
-                        shipping_address_1, shipping_city, shipping_state, shipping_postcode, shipping_country,
-                        shipping_phone)
-    db.session.add(delivery)
-    db.session.commit()
-    # 獲取最新的庫存
+    #先檢查庫存是否夠
     adj_amount_infos = adj_amount_set.split(';')
     for adj_amount_info in adj_amount_infos:
         adj_amount_detial = adj_amount_info.split(',')
@@ -235,12 +230,25 @@ def inventorydeliveries():
         if Inventory_now is not None:
             if Inventory_now < adj_amount:
                 return jsonify({
-                    'message': 'Quantities is not enough'
+                    'message': str(product_id) + ' Quantities is not enough'
                 })
         else:
             return jsonify({
                 'message': 'Quantities is not exist'
             })
+
+
+    # 產生配送單
+    delivery = Delivery(user_id, create_by, order_source, shipping_first_name, shipping_last_name, shipping_company,
+                        shipping_address_1, shipping_city, shipping_state, shipping_postcode, shipping_country,
+                        shipping_phone)
+    db.session.add(delivery)
+    db.session.commit()
+    # 獲取最新的庫存
+    for adj_amount_info in adj_amount_infos:
+        adj_amount_detial = adj_amount_info.split(',')
+        product_id = int(adj_amount_detial[0])
+        adj_amount = int(adj_amount_detial[2])
         #多物件指派時，扣除數量需修正為負數
         beging_inventory, ending_inventory = getInvertoryNow(user_id, product_id, adj_amount * -1)
         inventory = Inventory(user_id, beging_inventory, ending_inventory, adj_amount * -1, 0, product_id, create_by,
