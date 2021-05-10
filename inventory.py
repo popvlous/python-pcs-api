@@ -231,12 +231,12 @@ def inventorydeliveries():
                 if Inventory_now < adj_amount:
                     return jsonify({
                         'success': False,
-                        'message': str(product_id) + ' Quantities is not enough'
+                        'msg': str(product_id) + ' Quantities is not enough'
                     })
             else:
                 return jsonify({
                     'success': False,
-                    'message': 'Quantities is not exist'
+                    'msg': 'Quantities is not exist'
                 })
 
     # 產生配送單
