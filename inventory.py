@@ -230,10 +230,12 @@ def inventorydeliveries():
             if Inventory_now is not None:
                 if Inventory_now < adj_amount:
                     return jsonify({
+                        'success': False,
                         'message': str(product_id) + ' Quantities is not enough'
                     })
             else:
                 return jsonify({
+                    'success': False,
                     'message': 'Quantities is not exist'
                 })
 
@@ -264,8 +266,7 @@ def inventorydeliveries():
     lineNotifyMessage(token, msg)
     return jsonify({
         'success': True,
-        'msg': 'inventory is added now ',
-        'data': data
+        'msg': 'inventory is added now '
     })
 
 
