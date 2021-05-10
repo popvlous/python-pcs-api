@@ -290,7 +290,7 @@ def deliveryhistory(customer_id: int):
     deliveries = db.session.query(Delivery.id, Delivery.user_id, func.sum(subq.c.ending_inventory), func.sum(subq.c.adj_amount), Delivery.create_time,
                                   Delivery.modify_time, Delivery.create_by, Delivery.order_source, Delivery.location,
                                   Delivery.shipping_first_name, Delivery.shipping_last_name, Delivery.shipping_company,
-                                  Delivery.shipping_address_1, Delivery.shipping_city, Delivery.shipping_postcode,
+                                  Delivery.shipping_address_1, Delivery.shipping_city, Delivery.shipping_state, Delivery.shipping_postcode,
                                   Delivery.shipping_country, Delivery.shipping_phone,
                                   Delivery.shipment_number).filter_by(user_id=customer_id).join(subq, and_(
         Delivery.user_id == subq.c.user_id, Delivery.id == subq.c.delivery_id)).group_by(Delivery.user_id,
@@ -314,6 +314,7 @@ def deliveryhistory(customer_id: int):
                 'shipping_company': delivery.shipping_company,
                 'shipping_address_1': delivery.shipping_address_1,
                 'shipping_city': delivery.shipping_city,
+                'shipping_state': delivery.shipping_state,
                 'shipping_postcode': delivery.shipping_postcode,
                 'shipping_country': delivery.shipping_country,
                 'shipping_phone': delivery.shipping_phone,
