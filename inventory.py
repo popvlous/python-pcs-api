@@ -201,7 +201,7 @@ def inventorydelivery():
 # 多物件指派
 
 def inventorydeliveries():
-    #req = request.form.decode("utf-8").replace("'", '"')
+    #req = request.data.decode("utf-8").replace("'", '"')
     #data = json.loads(req)
     data = request.form
     user_id = data['user_id']
@@ -222,21 +222,20 @@ def inventorydeliveries():
     #先檢查庫存是否夠
     adj_amount_infos = adj_amount_set.split(';')
     for adj_amount_info in adj_amount_infos:
-        adj_amount_detial = adj_amount_info.split(',')
-        # 判斷配送的數量是否超過現有庫存
-        product_id = int(adj_amount_detial[0])
-        adj_amount = int(adj_amount_detial[2])
-        Inventory_now = getEndInvertory(user_id, product_id)
-        if Inventory_now is not None:
-            if Inventory_now < adj_amount:
+        if adj_amount_info:
+            adj_amount_detial = adj_amount_info.split(',')
+            product_id = int(adj_amount_detial[0])
+            adj_amount = int(adj_amount_detial[2])
+            Inventory_now = getEndInvertory(user_id, product_id)
+            if Inventory_now is not None:
+                if Inventory_now < adj_amount:
+                    return jsonify({
+                        'message': str(product_id) + ' Quantities is not enough'
+                    })
+            else:
                 return jsonify({
-                    'message': str(product_id) + ' Quantities is not enough'
+                    'message': 'Quantities is not exist'
                 })
-        else:
-            return jsonify({
-                'message': 'Quantities is not exist'
-            })
-
 
     # 產生配送單
     delivery = Delivery(user_id, create_by, order_source, shipping_first_name, shipping_last_name, shipping_company,
@@ -246,17 +245,18 @@ def inventorydeliveries():
     db.session.commit()
     # 獲取最新的庫存
     for adj_amount_info in adj_amount_infos:
-        adj_amount_detial = adj_amount_info.split(',')
-        product_id = int(adj_amount_detial[0])
-        adj_amount = int(adj_amount_detial[2])
-        #多物件指派時，扣除數量需修正為負數
-        beging_inventory, ending_inventory = getInvertoryNow(user_id, product_id, adj_amount * -1)
-        inventory = Inventory(user_id, beging_inventory, ending_inventory, adj_amount * -1, 0, product_id, create_by,
-                              order_source, shipping_first_name, shipping_last_name, shipping_company,
-                              shipping_address_1,
-                              shipping_city, shipping_postcode, shipping_country, shipping_phone, remark, delivery.id)
-        db.session.add(inventory)
-        db.session.commit()
+        if adj_amount_info:
+            adj_amount_detial = adj_amount_info.split(',')
+            product_id = int(adj_amount_detial[0])
+            adj_amount = int(adj_amount_detial[2])
+            #多物件指派時，扣除數量需修正為負數
+            beging_inventory, ending_inventory = getInvertoryNow(user_id, product_id, adj_amount * -1)
+            inventory = Inventory(user_id, beging_inventory, ending_inventory, adj_amount * -1, 0, product_id, create_by,
+                                  order_source, shipping_first_name, shipping_last_name, shipping_company,
+                                  shipping_address_1,
+                                  shipping_city, shipping_postcode, shipping_country, shipping_phone, remark, delivery.id)
+            db.session.add(inventory)
+            db.session.commit()
 
     # line通知
     token = 'M5g5yVHMV2gc6iRvs1xu5Bsb9OEj0Wux8pQcKknldMo'
