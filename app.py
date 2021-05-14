@@ -186,7 +186,7 @@ def showbcorder(customer_id: int):
 # 獲取單一用戶單一訂單訂單區塊鏈訊息
 @app.route('/pcs/api/v1/order/bc/<int:customer_id>/<int:order_id>')
 def showbcorderone(customer_id=None, order_id=None):
-    order_infos = []
+    
     orders = Orders.query.filter_by(customer_id=customer_id, order_id=order_id).all()
 
     if orders:
