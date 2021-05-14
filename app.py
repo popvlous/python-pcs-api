@@ -187,7 +187,7 @@ def showbcorder(customer_id: int):
 @app.route('/pcs/api/v1/order/bc/<int:customer_id>/<int:order_id>')
 def showbcorderone(customer_id=None, order_id=None):
     order_infos = []
-    orders = Orders.query.filter_by(customer_id=customer_id, order_id=order_id).all()
+    orders = Orders.query.filter_by(customer_id=customer_id, order_id=order_id).order_by(Orders.id.desc()).limit(1).all()
 
     if orders:
         # productlist = wcapi.get("products", params={"per_page": 20}).json()
