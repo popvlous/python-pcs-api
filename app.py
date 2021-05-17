@@ -186,19 +186,20 @@ def showbcorder(customer_id: int):
 # 獲取單一用戶單一訂單訂單區塊鏈訊息
 @app.route('/pcs/api/v1/order/bc/<int:customer_id>/<int:order_id>')
 def showbcorderone(customer_id=None, order_id=None):
-    
+
     orders = Orders.query.filter_by(customer_id=customer_id, order_id=order_id).all()
 
     if orders:
         # productlist = wcapi.get("products", params={"per_page": 20}).json()
         for order in orders:
-            response_orderlist = requests.get(
-                'https://ccapi.stag.nexuera.com/orders/query/' + str(order.order_id), headers=headers, verify=False)
-            # productlist = json.loads(response_orderlist.content.decode("utf-8").replace("'", '"'))
-            if len(response_orderlist.content) == 0:
-                order.checkinfo = False
-            else:
-                order.checkinfo = True
+            order.checkinfo = True
+            # response_orderlist = requests.get(
+            #     'https://ccapi.stag.nexuera.com/orders/query/' + str(order.order_id), headers=headers, verify=False)
+            # # productlist = json.loads(response_orderlist.content.decode("utf-8").replace("'", '"'))
+            # if len(response_orderlist.content) == 0:
+            #     order.checkinfo = False
+            # else:
+            #     order.checkinfo = True
         return jsonify([order.to_json_ext() for order in orders])
     else:
         return jsonify({

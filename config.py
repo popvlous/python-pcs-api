@@ -16,7 +16,7 @@ class Config(object):
         'mysql',
         'root',
         'root',
-        '192.168.50.207',
+        '127.0.0.1',
         3306,
         'pcs'
     )
