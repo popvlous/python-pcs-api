@@ -304,7 +304,9 @@ def order_details():
     db.session.add(order_info)
     db.session.commit()
     bc_info = insertBlockChainOrder(order_details)
+    print(bc_info)
     tx_id = bc_info[1].decode("utf-8").replace("'", '"')
+    print(tx_id)
     #   更新tx
     order_info_tx = Orders.query.filter_by(id=order_info.id).one()
     if tx_id:
@@ -337,6 +339,7 @@ def order_details():
         db.session.add(line_items_info)
         db.session.commit()
         line_item_bc_info = insertBlockChainLineItem(line_items_info)
+        print(line_item_bc_info)
         line_item_tx_id = line_item_bc_info[1].decode("utf-8").replace("'", '"')
         #   更新tx
         line_items_info_tx = OrdersLineItems.query.filter_by(id=line_items_info.id).one()
