@@ -51,6 +51,7 @@ class Orders(db.Model):
     shipping_state = db.Column(db.String(50), nullable=True)
     shipping_postcode = db.Column(db.String(50), nullable=True)
     shipping_country = db.Column(db.String(50), nullable=True)
+    tx_id = db.Column(db.String(100), nullable=True)
 
     def __init__(self, order_id, parent_id, state, billing_first_name, billing_last_name, currency, version, total,
                  total_tax, billing_company, billing_address_1, billing_address_2, billing_city, billing_state,
@@ -136,7 +137,8 @@ class Orders(db.Model):
             'created_via': self.created_via,
             'customer_id': self.customer_id,
             'customer_note': self.customer_note,
-            'cart_hash': self.cart_hash
+            'cart_hash': self.cart_hash,
+            'tx_id': self.tx_id
         }
 
     def to_json_ext(self):
@@ -180,6 +182,7 @@ class Orders(db.Model):
             'customer_note': self.customer_note,
             'cart_hash': self.cart_hash,
             'checkinfo': self.checkinfo,
+            'tx_id': self.tx_id
         }
 
 
@@ -202,6 +205,7 @@ class OrdersLineItems(db.Model):
     line_items_sku = db.Column(db.String(50), nullable=True)
     line_items_price = db.Column(db.Numeric(10, 6))
     line_items_parent_name = db.Column(db.String(100), nullable=True)
+    tx_id = db.Column(db.String(100), nullable=True)
 
     def __init__(self, order_id, line_items_id, line_items_name, line_items_product_id,
                  line_items_variation_id, line_items_quantity, line_items_tax_class, line_items_subtotal,

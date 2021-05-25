@@ -303,7 +303,13 @@ def order_details():
                         order_details_customer_note, order_details_cart_hash)
     db.session.add(order_info)
     db.session.commit()
-    insertBlockChainOrder(order_details)
+    bc_info = insertBlockChainOrder(order_details)
+    tx_id = bc_info[1].decode("utf-8").replace("'", '"')
+    #   更新tx
+    order_info_tx = Orders.query.filter_by(id=order_info.id).one()
+    if tx_id:
+        order_info_tx.tx_id = tx_id
+    db.session.commit()
 
     # 保存資料庫
 
@@ -330,7 +336,13 @@ def order_details():
                                           line_items_parent_name)
         db.session.add(line_items_info)
         db.session.commit()
-        insertBlockChainLineItem(line_items_info)
+        line_item_bc_info = insertBlockChainLineItem(line_items_info)
+        line_item_tx_id = line_item_bc_info[1].decode("utf-8").replace("'", '"')
+        #   更新tx
+        line_items_info_tx = OrdersLineItems.query.filter_by(id=line_items_info.id).one()
+        if line_item_tx_id:
+            line_items_info_tx.tx_id = line_item_tx_id
+        db.session.commit()
 
         # sql = "INSERT INTO Orders (order_id, parent_id, status, billing_first_name, billing_last_name)VALUES (" + str(
         #     order_details_id) + ", " + "" + str(order_details_parent_id) + ", " + str(order_details_status) + ", " + str(
