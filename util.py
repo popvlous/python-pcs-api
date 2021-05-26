@@ -83,7 +83,7 @@ def insertBlockChainOrder(order_details):
     return r.status_code, r.content
 
 def updateBlockChainOrder(order_details):
-    end_point_url_posts = "https://ccapi.stag.nexuera.com/orders/create"
+    end_point_url_posts = "https://ccapi.stag.nexuera.com/orders/update"
 
     billing = order_details['billing']
     shipping = order_details['shipping']

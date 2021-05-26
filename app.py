@@ -409,8 +409,8 @@ def orderupdate():
     # j_request_data = json.loads(request_data)
     # req_id = j_request_data['id']
     # orderid = 'orders/' + str(req_id)
-    # 無jwt調用方式
-    # order_details = wcapi.get(orderid).json()
+    # #無jwt調用方式
+    # #order_details = wcapi.get(orderid).json()
     # r = requests.post(end_point_url_posts, data=payload)
     # jwt_info = r.content.decode("utf-8").replace("'", '"')
     # data = json.loads(jwt_info)
