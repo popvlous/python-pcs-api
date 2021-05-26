@@ -146,7 +146,7 @@ def updateBlockChainOrder(order_details):
     }
 
     r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
-    return r.status_code
+    return r.status_code, r.content
 
 
 def insertBlockChainLineItem(line_items):

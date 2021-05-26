@@ -409,8 +409,8 @@ def orderupdate():
     # j_request_data = json.loads(request_data)
     # req_id = j_request_data['id']
     # orderid = 'orders/' + str(req_id)
-    # # 無jwt調用方式
-    # # order_details = wcapi.get(orderid).json()
+    # 無jwt調用方式
+    # order_details = wcapi.get(orderid).json()
     # r = requests.post(end_point_url_posts, data=payload)
     # jwt_info = r.content.decode("utf-8").replace("'", '"')
     # data = json.loads(jwt_info)
@@ -495,7 +495,15 @@ def orderupdate():
                             order_details_customer_note, order_details_cart_hash)
         db.session.add(order_info)
         db.session.commit()
-        updateBlockChainOrder(order_details)
+        bc_order_details_cancelled = updateBlockChainOrder(order_details)
+        print(bc_order_details_cancelled)
+        tx_id = bc_order_details_cancelled[1].decode("utf-8").replace("'", '"')
+        print(tx_id)
+        #   更新tx
+        order_info_tx = Orders.query.filter_by(id=order_info.id).one()
+        if tx_id:
+            order_info_tx.tx_id = tx_id
+        db.session.commit()
         # 保存資料庫
 
         for line_item in line_items:
@@ -521,7 +529,14 @@ def orderupdate():
                                               line_items_parent_name)
             db.session.add(line_items_info)
             db.session.commit()
-            insertBlockChainLineItem(line_items_info)
+            line_item_bc_info = insertBlockChainLineItem(line_items_info)
+            print(line_item_bc_info)
+            line_item_tx_id = line_item_bc_info[1].decode("utf-8").replace("'", '"')
+            #   更新tx
+            line_items_info_tx = OrdersLineItems.query.filter_by(id=line_items_info.id).one()
+            if line_item_tx_id:
+                line_items_info_tx.tx_id = line_item_tx_id
+            db.session.commit()
             # 庫存異動 取消時的庫存異動，須先判斷原訂單庫存是否存在
             inventory_info = Inventory.query.filter_by(user_id=order_details_customer_id,
                                                        product_id=line_items_product_id,
@@ -553,7 +568,15 @@ def orderupdate():
                             order_details_customer_note, order_details_cart_hash)
         db.session.add(order_info)
         db.session.commit()
-        updateBlockChainOrder(order_details)
+        bc_order_details_complete = updateBlockChainOrder(order_details)
+        print(bc_order_details_complete)
+        tx_id = bc_order_details_complete[1].decode("utf-8").replace("'", '"')
+        print(tx_id)
+        #   更新tx
+        order_info_tx = Orders.query.filter_by(id=order_info.id).one()
+        if tx_id:
+            order_info_tx.tx_id = tx_id
+        db.session.commit()
 
         for line_item in line_items:
             line_items_id = line_item['id']
@@ -578,7 +601,14 @@ def orderupdate():
                                               line_items_parent_name)
             db.session.add(line_items_info)
             db.session.commit()
-            insertBlockChainLineItem(line_items_info)
+            line_item_bc_info_complete = insertBlockChainLineItem(line_items_info)
+            print(line_item_bc_info_complete)
+            line_item_tx_id = line_item_bc_info_complete[1].decode("utf-8").replace("'", '"')
+            #   更新tx
+            line_items_info_tx = OrdersLineItems.query.filter_by(id=line_items_info.id).one()
+            if line_item_tx_id:
+                line_items_info_tx.tx_id = line_item_tx_id
+            db.session.commit()
 
             # 添加庫存
             beging_inventory, ending_inventory = getInvertoryNow(order_details_customer_id, line_items_product_id,
