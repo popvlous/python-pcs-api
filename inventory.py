@@ -279,7 +279,7 @@ def inventoryhistory(customer_id: int):
         return jsonify([inventory.to_json() for inventory in inventories])
     else:
         return jsonify({
-            'message': 'data is not exist'
+            'message': 'data is not exist!!'
         })
 
 
