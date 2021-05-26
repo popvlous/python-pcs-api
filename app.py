@@ -496,9 +496,9 @@ def orderupdate():
         db.session.add(order_info)
         db.session.commit()
         bc_order_details_cancelled = updateBlockChainOrder(order_details)
-        print(bc_order_details_cancelled)
+        print('cancelled:' + bc_order_details_cancelled)
         tx_id = bc_order_details_cancelled[1].decode("utf-8").replace("'", '"')
-        print(tx_id)
+        print('cancelled:' + tx_id)
         #   更新tx
         order_info_tx = Orders.query.filter_by(id=order_info.id).one()
         if tx_id:
@@ -569,9 +569,9 @@ def orderupdate():
         db.session.add(order_info)
         db.session.commit()
         bc_order_details_complete = updateBlockChainOrder(order_details)
-        print(bc_order_details_complete)
+        print('complete:' + bc_order_details_complete)
         tx_id = bc_order_details_complete[1].decode("utf-8").replace("'", '"')
-        print(tx_id)
+        print('complete:' + tx_id)
         #   更新tx
         order_info_tx = Orders.query.filter_by(id=order_info.id).one()
         if tx_id:
