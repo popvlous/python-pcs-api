@@ -174,6 +174,31 @@ def insertBlockChainLineItem(line_items):
     r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
     return r.status_code, r.content
 
+def updateBlockChainLineItem(line_items):
+    end_point_url_posts = "https://ccapi.stag.nexuera.com/orderitem/update"
+
+    payload = {
+        "id": line_items.id,
+        "order_id": line_items.order_id,
+        "line_items_id": line_items.line_items_id,
+        "line_items_name": line_items.line_items_name,
+        "line_items_product_id": line_items.line_items_product_id,
+        "line_items_variation_id": line_items.line_items_variation_id,
+        "line_items_quantity": line_items.line_items_quantity,
+        "line_items_tax_class": line_items.line_items_tax_class,
+        "line_items_subtotal": line_items.line_items_subtotal,
+        "line_items_subtotal_tax": line_items.line_items_subtotal_tax,
+        "line_items_total": line_items.line_items_total,
+        "line_items_total_tax": line_items.line_items_total_tax,
+        "line_items_taxes": line_items.line_items_taxes if line_items.line_items_taxes else "",
+        "line_items_sku": line_items.line_items_sku,
+        "line_items_price": line_items.line_items_price,
+        "line_items_parent_name": line_items.line_items_parent_name if line_items.line_items_parent_name else ""
+    }
+
+    r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
+    return r.status_code, r.content
+
 
 def insertBlockChainInventory(inventory):
     end_point_url_posts = "https://ccapi.stag.nexuera.com/inventory/create"
@@ -206,4 +231,37 @@ def insertBlockChainInventory(inventory):
     }
 
     r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
-    return r.status_code
+    return r.status_code, r.content
+
+def updateBlockChainInventory(inventory):
+    end_point_url_posts = "https://ccapi.stag.nexuera.com/inventory/update"
+
+    payload = {
+        "id": inventory.id,
+        "user_id": inventory.user_id,
+        "beging_inventory": inventory.beging_inventory,
+        "ending_inventory": inventory.ending_inventory,
+        "adj_amount": inventory.adj_amount,
+        "create_time": str(inventory.create_time),
+        "modify_time": str(inventory.modify_time),
+        "transaction_id": inventory.transaction_id if inventory.transaction_id else "",
+        "order_id": inventory.order_id,
+        "product_id": inventory.product_id,
+        "create_by": inventory.create_by,
+        "order_source": inventory.order_source,
+        "location": inventory.location if inventory.location else "",
+        "shipping_first_name": inventory.shipping_first_name,
+        "shipping_last_name": inventory.shipping_last_name,
+        "shipping_company": inventory.shipping_company,
+        "shipping_address_1": inventory.shipping_address_1,
+        "shipping_address_2": "",
+        "shipping_city": inventory.shipping_city,
+        "shipping_postcode": inventory.shipping_postcode,
+        "shipping_country": inventory.shipping_country,
+        "shipping_phone": inventory.shipping_phone,
+        "shipment_number": inventory.shipment_number if inventory.shipment_number else "",
+        "remark": inventory.remark
+    }
+
+    r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
+    return r.status_code, r.content

@@ -8,7 +8,8 @@ from config import config_dict
 from inventory import inventory, inventoryadd, getInvertoryNow, inventorydelivery, inventoryhistory, \
     inventorydeliveries, deliveryhistory
 from model import db, Orders, OrdersLineItems, Inventory
-from util import insertBlockChainOrder, insertBlockChainInventory, insertBlockChainLineItem, updateBlockChainOrder
+from util import insertBlockChainOrder, insertBlockChainInventory, insertBlockChainLineItem, updateBlockChainOrder, \
+    updateBlockChainLineItem, updateBlockChainInventory
 
 pymysql.install_as_MySQLdb()
 
@@ -530,7 +531,7 @@ def orderupdate():
                                               line_items_parent_name)
             db.session.add(line_items_info)
             db.session.commit()
-            line_item_bc_info = insertBlockChainLineItem(line_items_info)
+            line_item_bc_info = updateBlockChainLineItem(line_items_info)
             print(line_item_bc_info)
             line_item_tx_id = line_item_bc_info[1].decode("utf-8").replace("'", '"')
             #   更新tx
@@ -550,6 +551,15 @@ def orderupdate():
                                       order_details_id, line_items_product_id, 'System',
                                       'Web', '', '', '', '', '', '', '', '', '', 0)
                 db.session.add(inventory)
+                db.session.commit()
+                inventory_bc_info = updateBlockChainInventory(inventory)
+                print('inventory_cancelled')
+                print(inventory_bc_info)
+                inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
+                #   更新tx
+                inventory_info_tx = Inventory.query.filter_by(id=inventory.id).one()
+                if inventory_tx_id:
+                    inventory_info_tx.tx_id = inventory_tx_id
                 db.session.commit()
 
 
@@ -603,7 +613,7 @@ def orderupdate():
                                               line_items_parent_name)
             db.session.add(line_items_info)
             db.session.commit()
-            line_item_bc_info_complete = insertBlockChainLineItem(line_items_info)
+            line_item_bc_info_complete = updateBlockChainLineItem(line_items_info)
             print(line_item_bc_info_complete)
             line_item_tx_id = line_item_bc_info_complete[1].decode("utf-8").replace("'", '"')
             #   更新tx
@@ -620,7 +630,15 @@ def orderupdate():
                                   'Web', '', '', '', '', '', '', '', '', '', 0)
             db.session.add(inventory)
             db.session.commit()
-            insertBlockChainInventory(inventory)
+            inventory_bc_info = insertBlockChainInventory(inventory)
+            print('inventory_create')
+            print(inventory_bc_info)
+            inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
+            #   更新tx
+            inventory_info_tx = Inventory.query.filter_by(id=inventory.id).one()
+            if inventory_tx_id:
+                inventory_info_tx.tx_id = inventory_tx_id
+            db.session.commit()
 
     print(jsonify(order_details))
     return jsonify({
