@@ -613,7 +613,7 @@ def orderupdate():
                                               line_items_parent_name)
             db.session.add(line_items_info)
             db.session.commit()
-            line_item_bc_info_complete = updateBlockChainLineItem(line_items_info)
+            line_item_bc_info_complete = insertBlockChainLineItem(line_items_info)
             print(line_item_bc_info_complete)
             line_item_tx_id = line_item_bc_info_complete[1].decode("utf-8").replace("'", '"')
             #   更新tx
