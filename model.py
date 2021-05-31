@@ -277,6 +277,7 @@ class Inventory(db.Model):
     shipment_number = db.Column(db.String(50), nullable=True)
     delivery_id = db.Column(db.Integer)
     remark = db.Column(db.String(50))
+    tx_id = db.Column(db.String(100), nullable=True)
 
     def __init__(self, user_id, beging_inventory, ending_inventory, adj_amount, order_id, product_id, create_by,
                  order_source, shipping_first_name, shipping_last_name, shipping_company, shipping_address_1,
@@ -327,7 +328,8 @@ class Inventory(db.Model):
             'shipping_phone': self.shipping_phone,
             'shipment_number': self.shipment_number,
             'delivery_id': self.delivery_id,
-            'remark': self.remark
+            'remark': self.remark,
+            'tx_id': self.tx_id
         }
 
     def to_json_ext(self):
@@ -356,7 +358,8 @@ class Inventory(db.Model):
             'shipping_phone': self.shipping_phone,
             'shipment_number': self.shipment_number,
             'delivery_id': self.delivery_id,
-            'remark': self.remark
+            'remark': self.remark,
+            'tx_id':self.tx_id
         }
 
 
@@ -396,6 +399,7 @@ class Delivery(db.Model):
     shipping_phone = db.Column(db.String(50), nullable=True)
     shipment_number = db.Column(db.String(50), nullable=True)
     remark = db.Column(db.String(50))
+    tx_id = db.Column(db.String(100), nullable=True)
 
     def __init__(self, user_id, create_by, order_source, shipping_first_name, shipping_last_name, shipping_company,
                  shipping_address_1, shipping_city, shipping_state, shipping_postcode, shipping_country,
@@ -432,5 +436,6 @@ class Delivery(db.Model):
             'shipping_country': self.shipping_country,
             'shipping_phone': self.shipping_phone,
             'shipment_number': self.shipment_number,
-            'remark': self.remark
+            'remark': self.remark,
+            'tx_id': self.tx_id
         }

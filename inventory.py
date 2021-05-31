@@ -5,6 +5,7 @@ from flask import jsonify, app, request
 from sqlalchemy import desc, func, and_
 
 from model import Orders, Inventory, db, Delivery
+from util import insertBlockChainDelivery, insertBlockChainInventory
 
 user_name = "pyrarc.app"
 user_passwd = "dOidZQSGR09BnHROt4ss#NT3"
@@ -201,9 +202,10 @@ def inventorydelivery():
 # 多物件指派
 
 def inventorydeliveries():
-    #req = request.data.decode("utf-8").replace("'", '"')
-    #data = json.loads(req)
-    data = request.form
+    req = request.data.decode("utf-8").replace("'", '"')
+    data = json.loads(req)
+    #正式環境請開通由form來
+    #data = request.form
     user_id = data['user_id']
     adj_amount_set = data['adj_amount']
     create_by = data['create_by']
@@ -245,6 +247,16 @@ def inventorydeliveries():
                         shipping_phone)
     db.session.add(delivery)
     db.session.commit()
+    # 配送單上鏈
+    delivery_bc_info = insertBlockChainDelivery(delivery)
+    print(delivery_bc_info)
+    delivery_tx_id = delivery_bc_info[1].decode("utf-8").replace("'", '"')
+    #   更新tx
+    delivery_info_tx = Delivery.query.filter_by(id=delivery.id).one()
+    if delivery_tx_id:
+        delivery_info_tx.tx_id = delivery_tx_id
+    db.session.commit()
+
     # 獲取最新的庫存
     for adj_amount_info in adj_amount_infos:
         if adj_amount_info:
@@ -258,6 +270,16 @@ def inventorydeliveries():
                                   shipping_address_1,
                                   shipping_city, shipping_postcode, shipping_country, shipping_phone, remark, delivery.id)
             db.session.add(inventory)
+            db.session.commit()
+            #庫存上鏈
+            inventory_bc_info = insertBlockChainInventory(inventory)
+            print('inventory_discount')
+            print(inventory_bc_info)
+            inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
+            #   更新tx
+            inventory_info_tx = Inventory.query.filter_by(id=inventory.id).one()
+            if inventory_tx_id:
+                inventory_info_tx.tx_id = inventory_tx_id
             db.session.commit()
 
     # line通知
@@ -293,7 +315,7 @@ def deliveryhistory(customer_id: int):
                                   Delivery.shipping_first_name, Delivery.shipping_last_name, Delivery.shipping_company,
                                   Delivery.shipping_address_1, Delivery.shipping_city, Delivery.shipping_state, Delivery.shipping_postcode,
                                   Delivery.shipping_country, Delivery.shipping_phone,
-                                  Delivery.shipment_number).filter_by(user_id=customer_id).join(subq, and_(
+                                  Delivery.shipment_number, Delivery.tx_id).filter_by(user_id=customer_id).join(subq, and_(
         Delivery.user_id == subq.c.user_id, Delivery.id == subq.c.delivery_id)).group_by(Delivery.user_id,
                                                                                          Delivery.id).order_by(desc(Delivery.id)).limit(5).all()
 
@@ -319,7 +341,8 @@ def deliveryhistory(customer_id: int):
                 'shipping_postcode': delivery.shipping_postcode,
                 'shipping_country': delivery.shipping_country,
                 'shipping_phone': delivery.shipping_phone,
-                'shipment_number': delivery.shipment_number
+                'shipment_number': delivery.shipment_number,
+                'tx_id':delivery.tx_id
             }
             delivery_infos.append(delivery_info)
         return jsonify([info for info in delivery_infos])

@@ -46,7 +46,7 @@ headers = {
 
 # 正式環境請修正mode = 'Production'
 
-mode = 'Production'
+mode = 'Debug'
 app = Flask(__name__)
 # app.config["SERVER_NAME"] = 'test.com:5000'
 

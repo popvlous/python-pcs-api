@@ -82,6 +82,7 @@ def insertBlockChainOrder(order_details):
     r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
     return r.status_code, r.content
 
+
 def updateBlockChainOrder(order_details):
     end_point_url_posts = "https://ccapi.stag.nexuera.com/orders/update"
 
@@ -174,6 +175,7 @@ def insertBlockChainLineItem(line_items):
     r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
     return r.status_code, r.content
 
+
 def updateBlockChainLineItem(line_items):
     end_point_url_posts = "https://ccapi.stag.nexuera.com/orderitem/update"
 
@@ -233,6 +235,7 @@ def insertBlockChainInventory(inventory):
     r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
     return r.status_code, r.content
 
+
 def updateBlockChainInventory(inventory):
     end_point_url_posts = "https://ccapi.stag.nexuera.com/inventory/update"
 
@@ -261,6 +264,64 @@ def updateBlockChainInventory(inventory):
         "shipping_phone": inventory.shipping_phone,
         "shipment_number": inventory.shipment_number if inventory.shipment_number else "",
         "remark": inventory.remark
+    }
+
+    r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
+    return r.status_code, r.content
+
+
+def insertBlockChainDelivery(delivery):
+    end_point_url_posts = "https://ccapi.stag.nexuera.com/delivery/create"
+
+    payload = {
+        "id": delivery.id if delivery.id else "",
+        "user_id": delivery.user_id if delivery.user_id else "",
+        "create_time": str(delivery.create_time),
+        "modify_time": str(delivery.modify_time),
+        "create_by": delivery.create_by if delivery.create_by else "",
+        "order_source": delivery.order_source if delivery.order_source else "",
+        "location": delivery.location if delivery.location else "",
+        "shipping_first_name": delivery.shipping_first_name if delivery.shipping_first_name else "",
+        "shipping_last_name": delivery.shipping_last_name if delivery.shipping_last_name else "",
+        "shipping_company": delivery.shipping_company if delivery.shipping_company else "",
+        "shipping_address_1": delivery.shipping_address_1 if delivery.shipping_address_1 else "",
+        "shipping_address_2": delivery.shipping_address_2 if delivery.shipping_address_2 else "",
+        "shipping_city": delivery.shipping_city if delivery.shipping_city else "",
+        "shipping_state": delivery.shipping_state if delivery.shipping_state else "",
+        "shipping_postcode": delivery.shipping_postcode if delivery.shipping_postcode else "",
+        "shipping_country": delivery.shipping_country if delivery.shipping_country else "",
+        "shipping_phone": delivery.shipping_phone if delivery.shipping_phone else "",
+        "shipment_number": delivery.shipment_number if delivery.shipment_number else "",
+        "remark": delivery.remark if delivery.remark else ""
+    }
+
+    r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
+    return r.status_code, r.content
+
+
+def updateBlockChainDelivery(delivery):
+    end_point_url_posts = "https://ccapi.stag.nexuera.com/delivery/update"
+
+    payload = {
+        "id": delivery.id,
+        "user_id": delivery.user_id,
+        "create_time": delivery.create_time,
+        "modify_time": delivery.modify_time,
+        "create_by": delivery.create_by,
+        "order_source": delivery.order_source,
+        "location": delivery.location,
+        "shipping_first_name": delivery.shipping_first_name,
+        "shipping_last_name": delivery.shipping_last_name,
+        "shipping_company": delivery.shipping_company,
+        "shipping_address_1": delivery.shipping_address_1,
+        "shipping_address_2": delivery.shipping_address_2,
+        "shipping_city": delivery.shipping_city,
+        "shipping_state": delivery.shipping_state,
+        "shipping_postcode": delivery.shipping_postcode,
+        "shipping_country": delivery.shipping_country,
+        "shipping_phone": delivery.shipping_phone,
+        "shipment_number": delivery.shipment_number,
+        "remark": delivery.remark
     }
 
     r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
