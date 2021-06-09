@@ -231,6 +231,8 @@ def insertBlockChainInventory(inventory):
         "shipment_number": inventory.shipment_number if inventory.shipment_number else "",
         "remark": inventory.remark if inventory.remark else ""
     }
+    print('insert_inventory_bc')
+    print(payload)
 
     r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
     return r.status_code, r.content
