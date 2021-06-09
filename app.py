@@ -632,7 +632,7 @@ def orderupdate():
             db.session.commit()
             inventory_bc_info = insertBlockChainInventory(inventory)
             print('inventory_create')
-            print(inventory)
+            print(inventory.to_json())
             print(inventory_bc_info)
             inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
             #   更新tx
