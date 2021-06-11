@@ -202,10 +202,10 @@ def inventorydelivery():
 # 多物件指派
 
 def inventorydeliveries():
-    #req = request.data.decode("utf-8").replace("'", '"')
-    #data = json.loads(req)
+    req = request.data.decode("utf-8").replace("'", '"')
+    data = json.loads(req)
     #正式環境請開通由form來
-    data = request.form
+    #data = request.form
     user_id = data['user_id']
     adj_amount_set = data['adj_amount']
     create_by = data['create_by']
@@ -284,7 +284,7 @@ def inventorydeliveries():
 
     # line通知
     token = 'M5g5yVHMV2gc6iRvs1xu5Bsb9OEj0Wux8pQcKknldMo'
-    msg = '用戶已指派寄送，請登入平台，輸入物流單號 https://storeapi.pyrarc.com/backend/deliverylist?mid=' + str(inventory.id)
+    msg = '用戶已指派寄送，請登入平台，輸入物流單號 https://storeapi.pyrarc.com/backend/deliverylist?mid=' + str(delivery.id)
     lineNotifyMessage(token, msg)
     return jsonify({
         'success': 'true',
