@@ -654,7 +654,7 @@ def orderupdate():
                             order_details_customer_note, order_details_cart_hash)
         db.session.add(order_info)
         db.session.commit()
-        bc_order_details_Refunded = updateBlockChainOrder(order_details)
+        bc_order_details_Refunded = insertBlockChainInventory(order_details)
         print("Refunded")
         print(bc_order_details_Refunded)
         tx_id = bc_order_details_Refunded[1].decode("utf-8").replace("'", '"')
