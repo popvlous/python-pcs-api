@@ -29,7 +29,7 @@ wcapi = API(
 )
 
 user_name = "pyrarc.app"
-user_passwd = "dOidZQSGR09BnHROt4ss#NT3"
+user_passwd = "B8I%7s2MnQ1&nTM9OYP15ms0"
 end_point_url_posts = "https://store.pyrarc.com/wp-json/jwt-auth/v1/token"
 
 payload = {
@@ -482,6 +482,7 @@ def orderupdate():
     # line_items_parent_name = line_items['parent_name']
 
     # 保存資料庫
+    # 訂單取消
     if order_details_status == 'cancelled':
         order_info = Orders(order_details_id, order_details_parent_id, order_details_status, billing_first_name,
                             billing_last_name, order_details_currency, order_details_version, order_details_total,
@@ -561,11 +562,8 @@ def orderupdate():
                 if inventory_tx_id:
                     inventory_info_tx.tx_id = inventory_tx_id
                 db.session.commit()
-
-
-
+    # 訂單付款完成，增加庫存
     elif order_details_status == 'completed':
-        # 訂單付款完成，增加庫存
         order_info = Orders(order_details_id, order_details_parent_id, order_details_status, billing_first_name,
                             billing_last_name, order_details_currency, order_details_version, order_details_total,
                             order_details_total_tax,
@@ -639,6 +637,144 @@ def orderupdate():
             inventory_info_tx = Inventory.query.filter_by(id=inventory.id).one()
             if inventory_tx_id:
                 inventory_info_tx.tx_id = inventory_tx_id
+            db.session.commit()
+
+    #訂單退費完成
+    elif order_details_status == 'refunded':
+        order_info = Orders(order_details_id, order_details_parent_id, order_details_status, billing_first_name,
+                            billing_last_name, order_details_currency, order_details_version, order_details_total,
+                            order_details_total_tax,
+                            billing_company, billing_address_1, billing_address_2, billing_city, billing_state,
+                            billing_postcode, billing_country, billing_email, billing_phone, shipping_first_name,
+                            shipping_last_name, shipping_company, shipping_address_1, shipping_address_2, shipping_city,
+                            shipping_state,
+                            shipping_postcode, shipping_country, order_details_payment_method,
+                            order_details_payment_method_title, order_details_transaction_id,
+                            order_details_customer_ip_address, order_details_created_via, order_details_customer_id,
+                            order_details_customer_note, order_details_cart_hash)
+        db.session.add(order_info)
+        db.session.commit()
+        bc_order_details_Refunded = updateBlockChainOrder(order_details)
+        print("Refunded")
+        print(bc_order_details_Refunded)
+        tx_id = bc_order_details_Refunded[1].decode("utf-8").replace("'", '"')
+        print(tx_id)
+        #   更新tx
+        order_info_tx = Orders.query.filter_by(id=order_info.id).one()
+        if tx_id:
+            order_info_tx.tx_id = tx_id
+        db.session.commit()
+
+        for line_item in line_items:
+            line_items_id = line_item['id']
+            line_items_name = line_item['name']
+            line_items_product_id = line_item['product_id']
+            line_items_variation_id = line_item['variation_id']
+            line_items_quantity = line_item['quantity']
+            line_items_tax_class = line_item['tax_class']
+            line_items_subtotal = line_item['subtotal']
+            line_items_subtotal_tax = line_item['subtotal_tax']
+            line_items_total = line_item['total']
+            line_items_total_tax = line_item['total_tax']
+            line_items_taxes = line_item['taxes']
+            line_items_sku = line_item['sku']
+            line_items_price = line_item['price']
+            line_items_parent_name = line_item['parent_name']
+            line_items_info = OrdersLineItems(order_details_id, line_items_id, line_items_name,
+                                              line_items_product_id, line_items_variation_id, line_items_quantity,
+                                              line_items_tax_class, line_items_subtotal, line_items_subtotal_tax,
+                                              line_items_total,
+                                              line_items_total_tax, line_items_sku, line_items_price,
+                                              line_items_parent_name)
+            db.session.add(line_items_info)
+            db.session.commit()
+            line_item_bc_info_complete = insertBlockChainLineItem(line_items_info)
+            print(line_item_bc_info_complete)
+            line_item_tx_id = line_item_bc_info_complete[1].decode("utf-8").replace("'", '"')
+            #   更新tx
+            line_items_info_tx = OrdersLineItems.query.filter_by(id=line_items_info.id).one()
+            if line_item_tx_id:
+                line_items_info_tx.tx_id = line_item_tx_id
+            db.session.commit()
+
+            # 庫存異動 取消時的庫存異動，須先判斷原訂單庫存是否存在
+            inventory_info = Inventory.query.filter_by(user_id=order_details_customer_id,
+                                                       product_id=line_items_product_id,
+                                                       order_id=order_details_id).limit(1).all()
+            if inventory_info:
+                beging_inventory, ending_inventory = getInvertoryNow(order_details_customer_id, line_items_product_id,
+                                                                     line_items_quantity * -1)
+                inventory = Inventory(order_details_customer_id, beging_inventory, ending_inventory,
+                                      line_items_quantity * -1,
+                                      order_details_id, line_items_product_id, 'System',
+                                      'Web', '', '', '', '', '', '', '', '', '', 0)
+                db.session.add(inventory)
+                db.session.commit()
+                inventory_bc_info = updateBlockChainInventory(inventory)
+                print('inventory_cancelled')
+                print(inventory_bc_info)
+                inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
+                #   更新tx
+                inventory_info_tx = Inventory.query.filter_by(id=inventory.id).one()
+                if inventory_tx_id:
+                    inventory_info_tx.tx_id = inventory_tx_id
+                db.session.commit()
+    # 訂單失敗
+    elif order_details_status == 'failed':
+        order_info = Orders(order_details_id, order_details_parent_id, order_details_status, billing_first_name,
+                            billing_last_name, order_details_currency, order_details_version, order_details_total,
+                            order_details_total_tax,
+                            billing_company, billing_address_1, billing_address_2, billing_city, billing_state,
+                            billing_postcode, billing_country, billing_email, billing_phone, shipping_first_name,
+                            shipping_last_name, shipping_company, shipping_address_1, shipping_address_2, shipping_city,
+                            shipping_state,
+                            shipping_postcode, shipping_country, order_details_payment_method,
+                            order_details_payment_method_title, order_details_transaction_id,
+                            order_details_customer_ip_address, order_details_created_via, order_details_customer_id,
+                            order_details_customer_note, order_details_cart_hash)
+        db.session.add(order_info)
+        db.session.commit()
+        bc_order_details_failed = updateBlockChainOrder(order_details)
+        print("failed")
+        print(bc_order_details_failed)
+        tx_id = bc_order_details_failed[1].decode("utf-8").replace("'", '"')
+        print(tx_id)
+        #   更新tx
+        order_info_tx = Orders.query.filter_by(id=order_info.id).one()
+        if tx_id:
+            order_info_tx.tx_id = tx_id
+        db.session.commit()
+
+        for line_item in line_items:
+            line_items_id = line_item['id']
+            line_items_name = line_item['name']
+            line_items_product_id = line_item['product_id']
+            line_items_variation_id = line_item['variation_id']
+            line_items_quantity = line_item['quantity']
+            line_items_tax_class = line_item['tax_class']
+            line_items_subtotal = line_item['subtotal']
+            line_items_subtotal_tax = line_item['subtotal_tax']
+            line_items_total = line_item['total']
+            line_items_total_tax = line_item['total_tax']
+            line_items_taxes = line_item['taxes']
+            line_items_sku = line_item['sku']
+            line_items_price = line_item['price']
+            line_items_parent_name = line_item['parent_name']
+            line_items_info = OrdersLineItems(order_details_id, line_items_id, line_items_name,
+                                              line_items_product_id, line_items_variation_id, line_items_quantity,
+                                              line_items_tax_class, line_items_subtotal, line_items_subtotal_tax,
+                                              line_items_total,
+                                              line_items_total_tax, line_items_sku, line_items_price,
+                                              line_items_parent_name)
+            db.session.add(line_items_info)
+            db.session.commit()
+            line_item_bc_info_complete = insertBlockChainLineItem(line_items_info)
+            print(line_item_bc_info_complete)
+            line_item_tx_id = line_item_bc_info_complete[1].decode("utf-8").replace("'", '"')
+            #   更新tx
+            line_items_info_tx = OrdersLineItems.query.filter_by(id=line_items_info.id).one()
+            if line_item_tx_id:
+                line_items_info_tx.tx_id = line_item_tx_id
             db.session.commit()
 
     print(jsonify(order_details))
