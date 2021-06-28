@@ -51,7 +51,7 @@ class Orders(db.Model):
     shipping_state = db.Column(db.String(50), nullable=True)
     shipping_postcode = db.Column(db.String(50), nullable=True)
     shipping_country = db.Column(db.String(50), nullable=True)
-    tx_id = db.Column(db.String(100), nullable=True)
+    tx_id = db.Column(db.String(200), nullable=True)
 
     def __init__(self, order_id, parent_id, state, billing_first_name, billing_last_name, currency, version, total,
                  total_tax, billing_company, billing_address_1, billing_address_2, billing_city, billing_state,
@@ -277,7 +277,7 @@ class Inventory(db.Model):
     shipment_number = db.Column(db.String(50), nullable=True)
     delivery_id = db.Column(db.Integer)
     remark = db.Column(db.String(50))
-    tx_id = db.Column(db.String(100), nullable=True)
+    tx_id = db.Column(db.String(200), nullable=True)
 
     def __init__(self, user_id, beging_inventory, ending_inventory, adj_amount, order_id, product_id, create_by,
                  order_source, shipping_first_name, shipping_last_name, shipping_company, shipping_address_1,
@@ -359,7 +359,7 @@ class Inventory(db.Model):
             'shipment_number': self.shipment_number,
             'delivery_id': self.delivery_id,
             'remark': self.remark,
-            'tx_id':self.tx_id
+            'tx_id': self.tx_id
         }
 
 
@@ -399,7 +399,7 @@ class Delivery(db.Model):
     shipping_phone = db.Column(db.String(50), nullable=True)
     shipment_number = db.Column(db.String(50), nullable=True)
     remark = db.Column(db.String(50))
-    tx_id = db.Column(db.String(100), nullable=True)
+    tx_id = db.Column(db.String(200), nullable=True)
 
     def __init__(self, user_id, create_by, order_source, shipping_first_name, shipping_last_name, shipping_company,
                  shipping_address_1, shipping_city, shipping_state, shipping_postcode, shipping_country,
