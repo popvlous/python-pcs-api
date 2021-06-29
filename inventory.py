@@ -276,7 +276,7 @@ def inventorydeliveries():
             db.session.commit()
             #庫存上鏈
             inventory_bc_info = insertBlockChainInventory(inventory)
-            print('inventory_discount')
+            print('inventory_discount:'+str(product_id))
             print(inventory_bc_info)
             if int(inventory_bc_info[0]) == 200:
                 inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
@@ -294,7 +294,7 @@ def inventorydeliveries():
     lineNotifyMessage(token, msg)
     return jsonify({
         'success': 'true',
-        'msg': 'inventory is added now '
+        'msg': 'delivery is added now '
     })
 
 
