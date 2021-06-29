@@ -250,7 +250,10 @@ def inventorydeliveries():
     # 配送單上鏈
     delivery_bc_info = insertBlockChainDelivery(delivery)
     print(delivery_bc_info)
-    delivery_tx_id = delivery_bc_info[1].decode("utf-8").replace("'", '"')
+    if int(delivery_bc_info[0]) == 200:
+        delivery_tx_id = delivery_bc_info[1].decode("utf-8").replace("'", '"')
+    else:
+        delivery_tx_id = delivery_bc_info[0]
     #   更新tx
     delivery_info_tx = Delivery.query.filter_by(id=delivery.id).one()
     if delivery_tx_id:
@@ -275,7 +278,10 @@ def inventorydeliveries():
             inventory_bc_info = insertBlockChainInventory(inventory)
             print('inventory_discount')
             print(inventory_bc_info)
-            inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
+            if int(inventory_bc_info[0]) == 200:
+                inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
+            else:
+                inventory_tx_id = inventory_bc_info[0]
             #   更新tx
             inventory_info_tx = Inventory.query.filter_by(id=inventory.id).one()
             if inventory_tx_id:

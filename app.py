@@ -187,7 +187,6 @@ def showbcorder(customer_id: int):
 # 獲取單一用戶單一訂單訂單區塊鏈訊息
 @app.route('/pcs/api/v1/order/bc/<int:customer_id>/<int:order_id>')
 def showbcorderone(customer_id=None, order_id=None):
-
     orders = Orders.query.filter_by(customer_id=customer_id, order_id=order_id).all()
 
     if orders:
@@ -306,7 +305,11 @@ def order_details():
     db.session.commit()
     bc_info = insertBlockChainOrder(order_details)
     print(bc_info)
-    tx_id = bc_info[1].decode("utf-8").replace("'", '"')
+    tx_id = ''
+    if int(bc_info[0]) == 200:
+        tx_id = bc_info[1].decode("utf-8").replace("'", '"')
+    else:
+        tx_id = bc_info[0]
     print(tx_id)
     #   更新tx
     order_info_tx = Orders.query.filter_by(id=order_info.id).one()
@@ -341,7 +344,11 @@ def order_details():
         db.session.commit()
         line_item_bc_info = insertBlockChainLineItem(line_items_info)
         print(line_item_bc_info)
-        line_item_tx_id = line_item_bc_info[1].decode("utf-8").replace("'", '"')
+        line_item_tx_id = ''
+        if int(line_item_bc_info[0]) == 200:
+            line_item_tx_id = line_item_bc_info[1].decode("utf-8").replace("'", '"')
+        else:
+            line_item_tx_id = line_item_bc_info[0]
         #   更新tx
         line_items_info_tx = OrdersLineItems.query.filter_by(id=line_items_info.id).one()
         if line_item_tx_id:
@@ -500,7 +507,10 @@ def orderupdate():
         bc_order_details_cancelled = updateBlockChainOrder(order_details)
         print("cancelled")
         print(bc_order_details_cancelled)
-        tx_id = bc_order_details_cancelled[1].decode("utf-8").replace("'", '"')
+        if int(bc_order_details_cancelled[0]) == 200:
+            tx_id = bc_order_details_cancelled[1].decode("utf-8").replace("'", '"')
+        else:
+            tx_id = bc_order_details_cancelled[0]
         print(tx_id)
         #   更新tx
         order_info_tx = Orders.query.filter_by(id=order_info.id).one()
@@ -534,7 +544,10 @@ def orderupdate():
             db.session.commit()
             line_item_bc_info = updateBlockChainLineItem(line_items_info)
             print(line_item_bc_info)
-            line_item_tx_id = line_item_bc_info[1].decode("utf-8").replace("'", '"')
+            if int(line_item_bc_info[0]) == 200:
+                line_item_tx_id = line_item_bc_info[1].decode("utf-8").replace("'", '"')
+            else:
+                line_item_tx_id = line_item_bc_info[0]
             #   更新tx
             line_items_info_tx = OrdersLineItems.query.filter_by(id=line_items_info.id).one()
             if line_item_tx_id:
@@ -556,7 +569,10 @@ def orderupdate():
                 inventory_bc_info = updateBlockChainInventory(inventory)
                 print('inventory_cancelled')
                 print(inventory_bc_info)
-                inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
+                if int(inventory_bc_info[0]) == 200:
+                    inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
+                else:
+                    inventory_tx_id = inventory_bc_info[0]
                 #   更新tx
                 inventory_info_tx = Inventory.query.filter_by(id=inventory.id).one()
                 if inventory_tx_id:
@@ -580,7 +596,10 @@ def orderupdate():
         bc_order_details_complete = updateBlockChainOrder(order_details)
         print("complete")
         print(bc_order_details_complete)
-        tx_id = bc_order_details_complete[1].decode("utf-8").replace("'", '"')
+        if int(bc_order_details_complete[0]) == 200:
+            tx_id = bc_order_details_complete[1].decode("utf-8").replace("'", '"')
+        else:
+            tx_id = bc_order_details_complete[0]
         print(tx_id)
         #   更新tx
         order_info_tx = Orders.query.filter_by(id=order_info.id).one()
@@ -613,7 +632,10 @@ def orderupdate():
             db.session.commit()
             line_item_bc_info_complete = insertBlockChainLineItem(line_items_info)
             print(line_item_bc_info_complete)
-            line_item_tx_id = line_item_bc_info_complete[1].decode("utf-8").replace("'", '"')
+            if int(line_item_bc_info_complete[0]) == 200:
+                line_item_tx_id = line_item_bc_info_complete[1].decode("utf-8").replace("'", '"')
+            else:
+                line_item_tx_id = line_item_bc_info_complete[0]
             #   更新tx
             line_items_info_tx = OrdersLineItems.query.filter_by(id=line_items_info.id).one()
             if line_item_tx_id:
@@ -632,14 +654,17 @@ def orderupdate():
             print('inventory_create')
             print(inventory.to_json())
             print(inventory_bc_info)
-            inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
+            if int(inventory_bc_info[0]) == 200:
+                inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
+            else:
+                inventory_tx_id = inventory_bc_info[0]
             #   更新tx
             inventory_info_tx = Inventory.query.filter_by(id=inventory.id).one()
             if inventory_tx_id:
                 inventory_info_tx.tx_id = inventory_tx_id
             db.session.commit()
 
-    #訂單退費完成
+    # 訂單退費完成
     elif order_details_status == 'refunded':
         order_info = Orders(order_details_id, order_details_parent_id, order_details_status, billing_first_name,
                             billing_last_name, order_details_currency, order_details_version, order_details_total,
@@ -657,7 +682,10 @@ def orderupdate():
         bc_order_details_Refunded = updateBlockChainOrder(order_details)
         print("Refunded")
         print(bc_order_details_Refunded)
-        tx_id = bc_order_details_Refunded[1].decode("utf-8").replace("'", '"')
+        if int(bc_order_details_Refunded[0]) == 200:
+            tx_id = bc_order_details_Refunded[1].decode("utf-8").replace("'", '"')
+        else:
+            tx_id = bc_order_details_Refunded[0]
         print(tx_id)
         #   更新tx
         order_info_tx = Orders.query.filter_by(id=order_info.id).one()
@@ -690,7 +718,10 @@ def orderupdate():
             db.session.commit()
             line_item_bc_info_complete = insertBlockChainLineItem(line_items_info)
             print(line_item_bc_info_complete)
-            line_item_tx_id = line_item_bc_info_complete[1].decode("utf-8").replace("'", '"')
+            if int(line_item_bc_info_complete[0]) == 200:
+                line_item_tx_id = line_item_bc_info_complete[1].decode("utf-8").replace("'", '"')
+            else:
+                line_item_tx_id = line_item_bc_info_complete[0]
             #   更新tx
             line_items_info_tx = OrdersLineItems.query.filter_by(id=line_items_info.id).one()
             if line_item_tx_id:
@@ -713,7 +744,10 @@ def orderupdate():
                 inventory_bc_info = insertBlockChainInventory(inventory)
                 print('inventory_cancelled')
                 print(inventory_bc_info)
-                inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
+                if int(inventory_bc_info[0]) == 200:
+                    inventory_tx_id = inventory_bc_info[1].decode("utf-8").replace("'", '"')
+                else:
+                    inventory_tx_id = inventory_bc_info[0]
                 #   更新tx
                 inventory_info_tx = Inventory.query.filter_by(id=inventory.id).one()
                 if inventory_tx_id:
@@ -737,7 +771,10 @@ def orderupdate():
         bc_order_details_failed = updateBlockChainOrder(order_details)
         print("failed")
         print(bc_order_details_failed)
-        tx_id = bc_order_details_failed[1].decode("utf-8").replace("'", '"')
+        if int(bc_order_details_failed[0]) == 200:
+            tx_id = bc_order_details_failed[1].decode("utf-8").replace("'", '"')
+        else:
+            tx_id = bc_order_details_failed[0]
         print(tx_id)
         #   更新tx
         order_info_tx = Orders.query.filter_by(id=order_info.id).one()
@@ -770,7 +807,10 @@ def orderupdate():
             db.session.commit()
             line_item_bc_info_complete = insertBlockChainLineItem(line_items_info)
             print(line_item_bc_info_complete)
-            line_item_tx_id = line_item_bc_info_complete[1].decode("utf-8").replace("'", '"')
+            if int(line_item_bc_info_complete[0]) == 200:
+                line_item_tx_id = line_item_bc_info_complete[1].decode("utf-8").replace("'", '"')
+            else:
+                line_item_tx_id = line_item_bc_info_complete[0]
             #   更新tx
             line_items_info_tx = OrdersLineItems.query.filter_by(id=line_items_info.id).one()
             if line_item_tx_id:

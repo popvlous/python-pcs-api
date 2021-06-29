@@ -79,8 +79,11 @@ def insertBlockChainOrder(order_details):
         "line_items_parent_name": ""
     }
 
-    r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
-    return r.status_code, r.content
+    try:
+        r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
+        return r.status_code, r.content
+    except Exception as error:
+        return 404, str(error)
 
 
 def updateBlockChainOrder(order_details):
@@ -146,9 +149,11 @@ def updateBlockChainOrder(order_details):
         "line_items_parent_name": ""
     }
 
-    r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
-    return r.status_code, r.content
-
+    try:
+        r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
+        return r.status_code, r.content
+    except Exception as error:
+        return 404, str(error)
 
 def insertBlockChainLineItem(line_items):
     end_point_url_posts = "https://ccapi.stag.nexuera.com/orderitem/create"
@@ -172,8 +177,11 @@ def insertBlockChainLineItem(line_items):
         "line_items_parent_name": line_items.line_items_parent_name if line_items.line_items_parent_name else ""
     }
 
-    r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
-    return r.status_code, r.content
+    try:
+        r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
+        return r.status_code, r.content
+    except Exception as error:
+        return 404, str(error)
 
 
 def updateBlockChainLineItem(line_items):
@@ -198,8 +206,11 @@ def updateBlockChainLineItem(line_items):
         "line_items_parent_name": line_items.line_items_parent_name if line_items.line_items_parent_name else ""
     }
 
-    r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
-    return r.status_code, r.content
+    try:
+        r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
+        return r.status_code, r.content
+    except Exception as error:
+        return 404, str(error)
 
 
 def insertBlockChainInventory(inventory):
@@ -234,8 +245,11 @@ def insertBlockChainInventory(inventory):
     print('insert_inventory_bc')
     print(payload)
 
-    r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
-    return r.status_code, r.content
+    try:
+        r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
+        return r.status_code, r.content
+    except Exception as error:
+        return 404, str(error)
 
 
 def updateBlockChainInventory(inventory):
@@ -268,8 +282,12 @@ def updateBlockChainInventory(inventory):
         "remark": inventory.remark if inventory.remark else ""
     }
 
-    r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
-    return r.status_code, r.content
+    try:
+        r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
+        return r.status_code, r.content
+    except Exception as error:
+        return 404, str(error)
+
 
 
 def insertBlockChainDelivery(delivery):
@@ -297,8 +315,12 @@ def insertBlockChainDelivery(delivery):
         "remark": delivery.remark if delivery.remark else ""
     }
 
-    r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
-    return r.status_code, r.content
+    try:
+        r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
+        return r.status_code, r.content
+    except Exception as error:
+        return 404, str(error)
+
 
 
 def updateBlockChainDelivery(delivery):
@@ -326,5 +348,9 @@ def updateBlockChainDelivery(delivery):
         "remark": delivery.remark
     }
 
-    r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
-    return r.status_code, r.content
+    try:
+        r = requests.post(end_point_url_posts, headers=headers, data=json.dumps(payload), verify=False)
+        return r.status_code, r.content
+    except Exception as error:
+        return 404, str(error)
+
