@@ -9,6 +9,15 @@ headers = {
     "Content-Type": "application/json"
 }
 
+user_name = "pyrarc.app"
+user_passwd = "B8I%7s2MnQ1&nTM9OYP15ms0"
+end_point_url_posts = "https://store.pyrarc.com/wp-json/jwt-auth/v1/token"
+
+payload = {
+    "username": user_name,
+    "password": user_passwd
+}
+
 
 class Object:
     def toJSON(self):
@@ -353,4 +362,18 @@ def updateBlockChainDelivery(delivery):
         return r.status_code, r.content
     except Exception as error:
         return 404, str(error)
+
+
+def getOrderDetail(order_id):
+    r = requests.post(end_point_url_posts, data=payload)
+    jwt_info = r.content.decode("utf-8").replace("'", '"')
+    data = json.loads(jwt_info)
+    my_headers = {'Authorization': "Bearer " + data['token']}
+    res_order_details = requests.get('https://store.pyrarc.com/wp-json/wc/v3/orders/' + str(order_id),
+                                     data=payload,
+                                     headers=my_headers)
+    if not res_order_details:
+        return None
+    order_details = json.loads(res_order_details.content.decode("utf-8").replace("'", '"'))
+    return order_details
 

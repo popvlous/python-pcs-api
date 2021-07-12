@@ -9,7 +9,7 @@ from inventory import inventory, inventoryadd, getInvertoryNow, inventorydeliver
     inventorydeliveries, deliveryhistory
 from model import db, Orders, OrdersLineItems, Inventory
 from util import insertBlockChainOrder, insertBlockChainInventory, insertBlockChainLineItem, updateBlockChainOrder, \
-    updateBlockChainLineItem, updateBlockChainInventory
+    updateBlockChainLineItem, updateBlockChainInventory, getOrderDetail
 
 pymysql.install_as_MySQLdb()
 
@@ -953,6 +953,66 @@ def ordercancel():
         'success': True,
         'msg': 'order record is create in blcokchain ',
         'data': order_details
+    })
+
+
+@app.route('/pcs/api/v1/invoice', methods=['POST'])
+def invoice_details():
+    request_data = request.data.decode('utf-8')
+    if not request_data:
+        return jsonify({
+            'success': False
+        })
+    data = json.loads(request_data)
+    order_details = getOrderDetail(data['order_id'])
+    if not order_details:
+        return jsonify({
+            'success': False,
+            'msg': ' order is not exist'
+        })
+    order_info = Orders.query.filter_by(order_id=order_details['id'], state='pending').first()
+    if not order_info:
+        return jsonify({
+            'success': False,
+            'msg': ' order is not exist in pcs'
+        })
+    CarruerType = int(data['CarruerType'])
+    # 綠界科技電子發票載具
+    if CarruerType == 1:
+        CarruerNum = '50873438' + str(order_details['customer_id'])
+        (CarruerType, CarruerNum)
+        order_info.carruer_num = CarruerNum
+    # 自然人憑證
+    elif CarruerType == 2:
+        CarruerNum = data['CarruerNum']
+        (CarruerType, CarruerNum)
+        order_info.carruer_num = CarruerNum
+    # 手機條碼
+    elif CarruerType == 3:
+        CarruerNum = data['CarruerNum']
+        (CarruerType, CarruerNum)
+        order_info.carruer_num = CarruerNum
+    # 公司統編
+    elif CarruerType == 4:
+        CustomerIdentifier = data['CustomerIdentifier']
+        (CarruerType, CustomerIdentifier)
+        order_info.customer_identifier = CustomerIdentifier
+    # 捐贈碼
+    elif CarruerType == 5:
+        LoveCode = data['LoveCode']
+        (CarruerType, LoveCode)
+        order_info.lovecode = LoveCode
+    else:
+        return jsonify({
+            'success': False,
+            'msg': ' CarruerType is not exist'
+        })
+    order_info.carruer_type = CarruerType
+    db.session.commit()
+
+    return jsonify({
+        'success': True,
+        'msg': ' invoice info is add'
     })
 
 
